@@ -8,8 +8,14 @@ namespace ShatranjCore
 {
     public class PieceSet
     {
+        private PieceColor color;
         public List<Piece> Pieces;
-        public PieceColor PieceSetColor;
+        public PieceColor PieceSetColor { get { return color; } }
 
+        public PieceSet(PieceColor color)
+        {
+            this.color = color;
+            this.Pieces = new List<Piece>();
+        }
     }
 }

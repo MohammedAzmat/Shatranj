@@ -50,9 +50,11 @@ namespace ShatranjCore
                         possibleMoves.Append(new Move(this, new Square(source.Row, source.Column, this), new Square(source.Row + 2 * dirMult, source.Column), null));
                 }
                 //Capture
-                Location temp = new Location();
-                temp.Row = source.Row + 1 * dirMult;
-                temp.Column = source.Column - 1;
+                Location temp = new Location
+                {
+                    Row = source.Row + 1 * dirMult,
+                    Column = source.Column - 1
+                };
                 if (temp.Column >= 0 && ((!board.IsEmptyAt(temp.Row, temp.Column))&&(board.GetPiece(temp).Color != this.Color)))
                     possibleMoves.Append(new Move(this, new Square(source.Row, source.Column, this), new Square(temp.Row, temp.Column, board.GetPiece(temp)), board.GetPiece(temp)));
                 //Similarly Right Capture
@@ -69,6 +71,11 @@ namespace ShatranjCore
         {
             //throw new NotImplementedException();
             return (direction == PawnMoves.Up) ? 1 : -1;
+        }
+
+        internal override bool IsBlockingCheck(Location source, ChessBoard board)
+        {
+            throw new NotImplementedException();
         }
     }
 }

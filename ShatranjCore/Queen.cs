@@ -22,5 +22,15 @@ namespace ShatranjCore
         {
             throw new NotImplementedException();
         }
+
+        internal override List<Move> GetMoves(Location source, ChessBoard board)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal override bool IsBlockingCheck(Location source, ChessBoard board)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

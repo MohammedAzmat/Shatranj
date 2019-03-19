@@ -35,5 +35,10 @@ namespace ShatranjCore
             }
             return possibleMoves;
         }
+
+        internal override bool IsBlockingCheck(Location source, ChessBoard board)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

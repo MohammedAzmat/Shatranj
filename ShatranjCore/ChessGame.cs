@@ -84,11 +84,15 @@ namespace ShatranjCore
         private bool ValidMove(string v)
         {
             string[] split = v.Split('-');
-            Location source, destination;
-            source = DecodeInput(split[0]);
-            destination = DecodeInput(split[1]);
+            Location source = DecodeInput(split[0]), destination = DecodeInput(split[1]);
+            if (source.Row == -1 || source.Column == -1 || destination.Row == -1 || destination.Column == -1) return false;
+            //source = DecodeInput(split[0]);
+            //destination = DecodeInput(split[1]);
             Piece sourcePiece = board.GetPiece(source);
+            if (sourcePiece == null) return false;
             List<Move> moves = sourcePiece.GetMoves(source, board);
+            //TODO: Finish Valid moves.
+            return false;
         }
 
         private Location DecodeInput(string v)
@@ -98,28 +102,31 @@ namespace ShatranjCore
             switch (v[0])
             {
                 case 'a':
-                    location.Row = 0;
+                    location.Column = 0;
                     break;
                 case 'b':
-                    location.Row = 1;
+                    location.Column = 1;
                     break;
                 case 'c':
-                    location.Row = 2;
+                    location.Column = 2;
                     break;
                 case 'd':
-                    location.Row = 3;
+                    location.Column = 3;
                     break;
                 case 'e':
-                    location.Row = 4;
+                    location.Column = 4;
                     break;
                 case 'f':
-                    location.Row = 5;
+                    location.Column = 5;
                     break;
                 case 'g':
-                    location.Row = 6;
+                    location.Column = 6;
                     break;
                 case 'h':
-                    location.Row = 7;
+                    location.Column = 7;
+                    break;
+                default:
+                    location.Column = -1;
                     break;
             }
             switch (v[1])
@@ -147,6 +154,9 @@ namespace ShatranjCore
                     break;
                 case '1':
                     location.Row = 7;
+                    break;
+                default:
+                    location.Row = -1;
                     break;
             }
 

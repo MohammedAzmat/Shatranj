@@ -42,8 +42,16 @@ namespace ShatranjCore
         {
             //Initialize Board
             p1color = color;
+            boardSet = new PieceSet[2];
+            // For board and Fallen Piece Sets 0 is always black and 1 is always white. Since these are just Lists we are maintaining.
+            boardSet[0] = new PieceSet(PieceColor.Black);
+            boardSet[1] = new PieceSet(PieceColor.White);
+
+            fallenSet = new PieceSet[2];
+            fallenSet[0] = new PieceSet(PieceColor.Black);
+            fallenSet[1] = new PieceSet(PieceColor.White);
             InitializeBoard(p1color);
-            //boardSet = new PieceSet[2];
+            
             //if (p1color == PieceColor.Black)
             //{
             //    //Collection of Pieces on Board
@@ -54,9 +62,18 @@ namespace ShatranjCore
             
         }
 
+        public ChessBoard(ChessBoard board, Location source, Location destination)
+        {
+            this.squares = board.squares;
+            this.squares[destination.Row, destination.Column].Piece = board.GetPiece(source);
+            this.squares[source.Row, source.Column].Piece = null;
+        }
+
         internal bool IsEmptyAt(int row, int column)
         {
             //throw new NotImplementedException();
+            if (row > 7 || row < 0) return false;
+            if (column > 7 || column < 0) return false;
             return (squares[row, column].Piece == null) ? true : false;
         }
 
@@ -113,10 +130,15 @@ namespace ShatranjCore
             for (int i = 1; i < 8; i+=5)
             {
                 p1color = ChangePlayerColor(p1color);
+                int index = (p1color == PieceColor.Black) ? 0 : 1;
+
                 for (int j = 0; j < 8; j++)
+                {
                     //squares[i, j] = new Square(i, j, new Pawn(i, j, ChangePlayerColor(p1color),direction));
                     squares[i, j].Piece = new Pawn(i, j, p1color, direction);
+                    boardSet[index].Pieces.Append(squares[i, j].Piece);
 
+                }
                 direction = ChangeDirection(direction);
             }
         }
@@ -136,6 +158,7 @@ namespace ShatranjCore
             {
                 //Because we set player 2 first, from chess board perspective
                 p1color = ChangePlayerColor(p1color);
+                int index = (p1color == PieceColor.Black) ? 0 : 1;
                 for (int j = 0; j < 8; j++)
                     switch (j)
                     {
@@ -144,28 +167,37 @@ namespace ShatranjCore
                         case 7:
                             //squares[i, j] = new Square(i, j, new Rook(i, j, p1color));
                             squares[i, j].Piece = new Rook(i, j, p1color);
+                            boardSet[index].Pieces.Append(squares[i, j].Piece);
                             break;
                         //Knight
                         case 1:
                         case 6:
                             //squares[i, j] = new Square(i, j, new Knight(i, j, p1color));
                             squares[i, j].Piece = new Knight(i, j, p1color);
+                            boardSet[index].Pieces.Append(squares[i, j].Piece);
+
                             break;
                         //Bishop
                         case 2:
                         case 5:
                             //squares[i, j] = new Square(i, j, new Bishop(i, j, p1color));
                             squares[i, j].Piece = new Bishop(i, j, p1color);
+                            boardSet[index].Pieces.Append(squares[i, j].Piece);
+
                             break;
                         //Queen
                         case 3:
                             //squares[i, j] = new Square(i, j, new Queen(i, j, p1color));
                             squares[i, j].Piece = new Queen(i, j, p1color);
+                            boardSet[index].Pieces.Append(squares[i, j].Piece);
+
                             break;
                         //King
                         case 4:
                             //squares[i, j] = new Square(i, j, new King(i, j, p1color));
                             squares[i, j].Piece = new King(i, j, p1color);
+                            boardSet[index].Pieces.Append(squares[i, j].Piece);
+
                             break;
                     }
             }
@@ -210,6 +242,8 @@ namespace ShatranjCore
 
 
         }
+
+        public List<Piece> GetOppPieces(PieceColor color) { return new List<Piece>(); }
 
         #endregion
     }
