@@ -10,8 +10,9 @@ namespace ShatranjCore
     {
         //private int row, column;
         //private Piece piece;
-        public int Row { get; set; }
-        public int Column { get; set; }
+        public Location Location { get; set; }
+        //public int Row { get; set; }
+        //public int Column { get; set; }
         public Piece Piece { get; set; }
 
         public bool IsEmpty() { return (this.Piece == null)?true:false; }
@@ -19,8 +20,13 @@ namespace ShatranjCore
 
         public Square(int i, int j, Piece p = null)
         {
-            this.Row = i;
-            this.Column = j;
+            Location = new Location(i, j);
+            this.Piece = p;
+        }
+
+        public Square(Location l, Piece p = null)
+        {
+            Location = l;
             this.Piece = p;
         }
 
@@ -32,11 +38,11 @@ namespace ShatranjCore
         //    this.Piece = null;
         //}
 
-        internal void Initialize(int i, int j, Piece p = null)
-        {
-            this.Row = i;
-            this.Column = j;
-            this.Piece = p;
-        }
+        //internal void Initialize(int i, int j, Piece p = null)
+        //{
+        //    this.Row = i;
+        //    this.Column = j;
+        //    this.Piece = p;
+        //}
     }
 }

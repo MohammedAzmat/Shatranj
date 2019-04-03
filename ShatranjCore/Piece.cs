@@ -41,6 +41,12 @@ namespace ShatranjCore
                     column = value;
             }
         }
+
+        public Location(int r, int c)
+        {
+            row = r;
+            column = c;
+        }
     }
     public abstract class Piece
     {
@@ -66,5 +72,6 @@ namespace ShatranjCore
         abstract public bool IsCaptured();
         internal abstract List<Move> GetMoves(Location source, ChessBoard board);
         internal abstract bool IsBlockingCheck(Location source, ChessBoard board);
+        internal abstract bool CanMove(Location source, Location destination, ChessBoard board);
     }
 }

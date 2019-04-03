@@ -100,13 +100,7 @@ namespace ShatranjCore
              * |P|P|P|P|P|P|P|P|    //Infantry
              * |R|N|B|Q|K|B|N|R|    //Spl Forces
              */
-            //Since Chess is a mirror of top 4 rows, we run it only for the first 4 rows
-            //That is Row1 is same as Row8 only change in colors. same for 2 and 7 so on and so forth.
-            //Row1 and Row8
-            //InitializeSplForces(p1color);
-            //Row2 and Row7
-            //InitializeInfantry(p1color);
-            //Initialize blank chess squares
+            
             InitializeRest();
 
             InitializeSplForces(p1color);

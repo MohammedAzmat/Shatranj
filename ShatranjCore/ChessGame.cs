@@ -90,9 +90,8 @@ namespace ShatranjCore
             //destination = DecodeInput(split[1]);
             Piece sourcePiece = board.GetPiece(source);
             if (sourcePiece == null) return false;
-            List<Move> moves = sourcePiece.GetMoves(source, board);
-            //TODO: Finish Valid moves.
-            return false;
+            //List<Move> moves = sourcePiece.GetMoves(source, board);
+            return sourcePiece.CanMove(source, destination, board);
         }
 
         private Location DecodeInput(string v)
