@@ -1,8 +1,9 @@
 # Shatranj - Persian Chess Game
 
-[![Phase](https://img.shields.io/badge/Phase-1%20(85%25)-yellow)]()
+[![Phase](https://img.shields.io/badge/Phase-1%20(100%25%20Complete)-brightgreen)]()
 [![.NET](https://img.shields.io/badge/.NET-Framework%204.7.1-blue)]()
 [![License](https://img.shields.io/badge/License-MIT-green)]()
+[![Tests](https://img.shields.io/badge/Tests-40%20Passing-brightgreen)]()
 
 A fully-featured chess game built with **SOLID principles** from the ground up. "Shatranj" is the Persian word for chess.
 
@@ -12,9 +13,9 @@ A fully-featured chess game built with **SOLID principles** from the ground up. 
 ## 🎯 Project Vision
 
 Build a complete chess game through iterative phases:
-- **Phase 1**: Human vs Human (Command Line) ← *Current Phase*
-- **Phase 2**: AI Integration (Basic)
-- **Phase 3**: AI with Difficulty Levels & Self-Learning
+- **Phase 1**: Human vs Human (Command Line) ✅ *Complete!*
+- **Phase 2**: AI Integration (Basic) ← *Next Phase*
+- **Phase 3**: AI with Difficulty Levels & AI vs AI Learning
 - **Phase 4**: Online Multiplayer
 - **Phase 5**: GUI Implementation
 
@@ -23,11 +24,12 @@ Build a complete chess game through iterative phases:
 ### Core Gameplay
 - ✅ Complete piece movement logic (King, Queen, Rook, Bishop, Knight, Pawn)
 - ✅ Move validation and legal move detection
-- ✅ Castling (kingside and queenside)
+- ✅ Check, checkmate, and stalemate detection
+- ✅ Castling (kingside and queenside with check validation)
 - ✅ Pawn promotion with interactive piece selection
+- ✅ En passant special pawn capture
 - ✅ Capture detection and tracking
-- ⚠️ En passant (in progress)
-- ⚠️ Check, checkmate, and stalemate detection (in progress)
+- ✅ Move simulation to prevent king exposure
 
 ### User Interface
 - ✅ Beautiful terminal UI with Unicode box-drawing
@@ -122,15 +124,14 @@ dotnet run
 
 ### Test Coverage
 
-Current test coverage:
+Complete test coverage (40 tests):
 - ✅ Rook movement (6 tests)
 - ✅ Knight movement (6 tests)
-- ⚠️ Bishop movement (pending)
-- ⚠️ Queen movement (pending)
-- ⚠️ King movement (pending)
-- ⚠️ Pawn movement (pending)
-- ⚠️ Castling (pending)
-- ⚠️ Pawn promotion (pending)
+- ✅ Bishop movement (6 tests)
+- ✅ Queen movement (6 tests)
+- ✅ King movement (6 tests)
+- ✅ Pawn movement (10 tests including en passant)
+- ✅ All tests passing
 
 ## 📖 Game Commands
 
@@ -174,8 +175,9 @@ castle q            # Shorthand for queenside
 **Castling Rules:**
 - King and rook must not have moved
 - No pieces between king and rook
-- King cannot be in check (coming soon)
-- King cannot pass through check (coming soon)
+- King cannot be in check
+- King cannot pass through check
+- King cannot end in check
 
 ### Getting Help
 
@@ -323,15 +325,21 @@ Shatranj/
 │   ├── ConsoleBoardRenderer.cs # Terminal display (SRP)
 │   ├── MoveHistory.cs         # Move tracking (SRP)
 │   ├── CastlingValidator.cs   # Castling logic (SRP)
-│   └── PawnPromotionHandler.cs # Promotion logic (SRP)
+│   ├── PawnPromotionHandler.cs # Promotion logic (SRP)
+│   ├── CheckDetector.cs       # Check/checkmate detection (SRP)
+│   └── EnPassantTracker.cs    # En passant tracking (SRP)
 ├── ShatranjCMD/               # Console application
 │   └── Program.cs             # Entry point
 ├── ShatranjMain/              # Windows Forms GUI (Phase 5)
 ├── tests/                     # Unit tests
 │   ├── ShatranjCore.Tests/   # Core logic tests
 │   │   ├── PieceTests/
-│   │   │   ├── RookTests.cs
-│   │   │   └── KnightTests.cs
+│   │   │   ├── RookTests.cs     # 6 tests
+│   │   │   ├── KnightTests.cs   # 6 tests
+│   │   │   ├── BishopTests.cs   # 6 tests
+│   │   │   ├── QueenTests.cs    # 6 tests
+│   │   │   ├── KingTests.cs     # 6 tests
+│   │   │   └── PawnTests.cs     # 10 tests
 │   │   └── TestRunner.cs
 │   └── README.md
 ├── docs/                      # Documentation
@@ -420,36 +428,38 @@ Read more in [`docs/SOLID_PRINCIPLES.md`](docs/SOLID_PRINCIPLES.md)
 
 ## 🎯 Current Status
 
-### Phase 1 Progress: ~85% Complete
+### Phase 1: ✅ 100% Complete!
 
-**Completed:**
-- ✅ All piece movement implementations
-- ✅ Terminal UI with colors and formatting
-- ✅ Command parsing system
-- ✅ Move validation
-- ✅ Castling (both sides)
-- ✅ Pawn promotion with ESC cancellation
-- ✅ Move history tracking
-- ✅ Captured pieces tracking
-- ✅ Unit test infrastructure
+**All Phase 1 Objectives Achieved:**
+- ✅ All piece movement implementations (Rook, Knight, Bishop, Queen, King, Pawn)
+- ✅ Terminal UI with colors and Unicode formatting
+- ✅ Command parsing system with comprehensive command support
+- ✅ Move validation and legal move detection
+- ✅ Check, checkmate, and stalemate detection
+- ✅ Castling (kingside and queenside with full validation)
+- ✅ Pawn promotion with interactive selection and ESC cancellation
+- ✅ En passant special pawn capture
+- ✅ Move history tracking with algebraic notation
+- ✅ Captured pieces tracking and display
+- ✅ Complete unit test coverage (40 tests passing)
+- ✅ Comprehensive documentation
 
-**In Progress:**
-- ⚙️ En passant special move
-- ⚙️ Check detection
-- ⚙️ Checkmate detection
-- ⚙️ Stalemate detection
+**Ready for Phase 2: AI Integration**
 
-**TODO:**
-- ⚪ Draw conditions (threefold repetition, fifty-move rule)
-- ⚪ Complete unit test coverage
+**Future Enhancements (Post-Phase 1):**
+- ⚪ Draw conditions (threefold repetition, fifty-move rule, insufficient material)
 - ⚪ Game save/load functionality
+- ⚪ Move time tracking
+- ⚪ Opening book integration
 
 ## 🐛 Known Issues
 
-- Check detection not yet implemented (castling doesn't check for check)
-- En passant not yet implemented
-- No draw detection yet
-- Game save/load not implemented
+**Phase 1 - None! All core chess rules implemented.**
+
+**Future Enhancements:**
+- Draw conditions not yet implemented (threefold repetition, fifty-move rule, insufficient material)
+- Game save/load functionality not implemented
+- No opening book or endgame tablebase integration
 
 ## 🤝 Contributing
 
