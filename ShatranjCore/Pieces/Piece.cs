@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ShatranjCore.Board;
 using ShatranjCore.Interfaces;
+using ShatranjCore.Movement;
 
 namespace ShatranjCore.Pieces
 {
@@ -30,8 +31,8 @@ namespace ShatranjCore.Pieces
 
         abstract public Square[] ValidMoves();
         abstract public bool IsCaptured();
-        internal abstract List<Move> GetMoves(Location source, IChessBoard board);
-        internal abstract bool IsBlockingCheck(Location source, IChessBoard board);
-        internal abstract bool CanMove(Location source, Location destination, IChessBoard board);
+        public abstract List<Move> GetMoves(Location source, IChessBoard board);
+        public abstract bool IsBlockingCheck(Location source, IChessBoard board);
+        public abstract bool CanMove(Location source, Location destination, IChessBoard board);
     }
 }

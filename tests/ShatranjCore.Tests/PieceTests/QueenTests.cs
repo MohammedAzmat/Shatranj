@@ -5,6 +5,7 @@ using ShatranjCore;
 using ShatranjCore.Pieces;
 using ShatranjCore.Board;
 using ShatranjCore.Interfaces;
+using ShatranjCore.Movement;
 
 namespace ShatranjCore.Tests.PieceTests
 {

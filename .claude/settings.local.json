@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nFix: errors and add missing references\n\n- Remove duplicate Move class from Models.cs, keep only Movement.Move class\n- Add missing using ShatranjCore.Movement directives to piece classes and tests\n- Fix invalid Square property access in MoveMaker.cs\n- Replace List.Append() with List.Add() in ChessBoard.cs (6 occurrences)\n- Change internal methods to public for test access (GetMoves, CanMove, IsBlockingCheck, GetMovesWithEnPassant)\n- Implement IsCaptured() method in Pawn.cs to return false\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

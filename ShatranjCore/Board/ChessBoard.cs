@@ -133,7 +133,7 @@ namespace ShatranjCore.Board
                 {
                     //squares[i, j] = new Square(i, j, new Pawn(i, j, ChangePlayerColor(p1color),direction));
                     squares[i, j].Piece = new Pawn(i, j, p1color, direction);
-                    boardSet[index].Pieces.Append(squares[i, j].Piece);
+                    boardSet[index].Pieces.Add(squares[i, j].Piece);
 
                 }
                 direction = ChangeDirection(direction);
@@ -164,14 +164,14 @@ namespace ShatranjCore.Board
                         case 7:
                             //squares[i, j] = new Square(i, j, new Rook(i, j, p1color));
                             squares[i, j].Piece = new Rook(i, j, p1color);
-                            boardSet[index].Pieces.Append(squares[i, j].Piece);
+                            boardSet[index].Pieces.Add(squares[i, j].Piece);
                             break;
                         //Knight
                         case 1:
                         case 6:
                             //squares[i, j] = new Square(i, j, new Knight(i, j, p1color));
                             squares[i, j].Piece = new Knight(i, j, p1color);
-                            boardSet[index].Pieces.Append(squares[i, j].Piece);
+                            boardSet[index].Pieces.Add(squares[i, j].Piece);
 
                             break;
                         //Bishop
@@ -179,21 +179,21 @@ namespace ShatranjCore.Board
                         case 5:
                             //squares[i, j] = new Square(i, j, new Bishop(i, j, p1color));
                             squares[i, j].Piece = new Bishop(i, j, p1color);
-                            boardSet[index].Pieces.Append(squares[i, j].Piece);
+                            boardSet[index].Pieces.Add(squares[i, j].Piece);
 
                             break;
                         //Queen
                         case 3:
                             //squares[i, j] = new Square(i, j, new Queen(i, j, p1color));
                             squares[i, j].Piece = new Queen(i, j, p1color);
-                            boardSet[index].Pieces.Append(squares[i, j].Piece);
+                            boardSet[index].Pieces.Add(squares[i, j].Piece);
 
                             break;
                         //King
                         case 4:
                             //squares[i, j] = new Square(i, j, new King(i, j, p1color));
                             squares[i, j].Piece = new King(i, j, p1color);
-                            boardSet[index].Pieces.Append(squares[i, j].Piece);
+                            boardSet[index].Pieces.Add(squares[i, j].Piece);
 
                             break;
                     }

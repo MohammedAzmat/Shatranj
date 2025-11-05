@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ShatranjCore.Board;
 using ShatranjCore.Pieces;
+using ShatranjCore.Movement;
 
 namespace ShatranjCore.Game
 {

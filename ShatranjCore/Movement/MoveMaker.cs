@@ -33,12 +33,12 @@ namespace ShatranjCore.Movement
         public List<Move> GetVerticleMoves(Square source, ChessBoard board)
         {
             List<Move> possibleMoves = new List<Move>();
-            Square temp = new Square(source.Location.Row, source.Column);
+            Square temp = new Square(source.Location.Row, source.Location.Column);
             int i = 1;
-            while ((temp.Row+i) < 8 && board.IsEmptyAt(temp.Row+i,temp.Column))
+            while ((temp.Location.Row+i) < 8 && board.IsEmptyAt(temp.Location.Row+i,temp.Location.Column))
             {
-                temp.Row += 1;
-                possibleMoves.Append(new Move(source.Piece, source, temp));
+                temp.Location = new Location(temp.Location.Row + 1, temp.Location.Column);
+                possibleMoves.Add(new Move(source.Piece, source, temp));
             }
             return possibleMoves;
         }

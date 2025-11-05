@@ -67,15 +67,6 @@ namespace ShatranjCore
     }
 
     /// <summary>
-    /// Struct representing a chess move
-    /// </summary>
-    public struct Move
-    {
-        public Location From { get; set; }
-        public Location To { get; set; }
-    }
-
-    /// <summary>
     /// Enum representing player type
     /// </summary>
     public enum PlayerType

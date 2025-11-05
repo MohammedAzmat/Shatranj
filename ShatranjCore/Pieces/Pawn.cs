@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ShatranjCore.Board;
 using ShatranjCore.Interfaces;
+using ShatranjCore.Movement;
 
 namespace ShatranjCore.Pieces
 {
@@ -22,7 +23,9 @@ namespace ShatranjCore.Pieces
         
         public override bool IsCaptured()
         {
-            throw new NotImplementedException();
+            // A piece is captured when it's been removed from the board
+            // This will be implemented when we add captured piece tracking
+            return false;
         }
 
         public override Square[] ValidMoves()
@@ -35,7 +38,7 @@ namespace ShatranjCore.Pieces
             return ((location.Row == 0 && direction == PawnMoves.Up) || (location.Row == 7 && direction == PawnMoves.Down)) ? true : false;
         }
 
-        internal override List<Move> GetMoves(Location source, IChessBoard board)
+        public override List<Move> GetMoves(Location source, IChessBoard board)
         {
             return GetMovesWithEnPassant(source, board, null);
         }
@@ -43,7 +46,7 @@ namespace ShatranjCore.Pieces
         /// <summary>
         /// Gets all possible moves for this pawn, including en passant if available.
         /// </summary>
-        internal List<Move> GetMovesWithEnPassant(Location source, IChessBoard board, Location? enPassantTarget)
+        public List<Move> GetMovesWithEnPassant(Location source, IChessBoard board, Location? enPassantTarget)
         {
             List<Move> possibleMoves = new List<Move>();
 
@@ -150,7 +153,7 @@ namespace ShatranjCore.Pieces
             return (direction == PawnMoves.Up) ? 1 : -1;
         }
 
-        internal override bool CanMove(Location source, Location destination, IChessBoard board)
+        public override bool CanMove(Location source, Location destination, IChessBoard board)
         {
             List<Move> validMoves = GetMoves(source, board);
             return validMoves.Any(m =>
@@ -158,7 +161,7 @@ namespace ShatranjCore.Pieces
                 m.To.Location.Column == destination.Column);
         }
 
-        internal override bool IsBlockingCheck(Location source, IChessBoard board)
+        public override bool IsBlockingCheck(Location source, IChessBoard board)
         {
             // TODO: Implement check blocking logic in Phase 1
             // A piece blocks check if removing it would put its own King in check

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ShatranjCore.Board;
 using ShatranjCore.Interfaces;
+using ShatranjCore.Movement;
 
 namespace ShatranjCore.Pieces
 {
@@ -26,7 +27,7 @@ namespace ShatranjCore.Pieces
             throw new NotImplementedException();
         }
 
-        internal override List<Move> GetMoves(Location source, IChessBoard board)
+        public override List<Move> GetMoves(Location source, IChessBoard board)
         {
             List<Move> possibleMoves = new List<Move>();
 
@@ -86,7 +87,7 @@ namespace ShatranjCore.Pieces
             return possibleMoves;
         }
 
-        internal override bool CanMove(Location source, Location destination, IChessBoard board)
+        public override bool CanMove(Location source, Location destination, IChessBoard board)
         {
             List<Move> validMoves = GetMoves(source, board);
             return validMoves.Any(m =>
@@ -94,7 +95,7 @@ namespace ShatranjCore.Pieces
                 m.To.Location.Column == destination.Column);
         }
 
-        internal override bool IsBlockingCheck(Location source, IChessBoard board)
+        public override bool IsBlockingCheck(Location source, IChessBoard board)
         {
             // TODO: Implement check blocking logic in Phase 1
             // A piece blocks check if removing it would put its own King in check
