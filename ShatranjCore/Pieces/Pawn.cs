@@ -150,7 +150,9 @@ namespace ShatranjCore.Pieces
         private int GetDirectionMultiplier()
         {
             //throw new NotImplementedException();
-            return (direction == PawnMoves.Up) ? 1 : -1;
+            // Up = move towards row 0 (decreasing row index)
+            // Down = move towards row 7 (increasing row index)
+            return (direction == PawnMoves.Up) ? -1 : 1;
         }
 
         public override bool CanMove(Location source, Location destination, IChessBoard board)

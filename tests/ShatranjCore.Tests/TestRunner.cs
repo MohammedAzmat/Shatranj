@@ -19,6 +19,10 @@ namespace ShatranjCore.Tests
             int totalTests = 0;
             int passedTests = 0;
 
+            // Run initial game state test first
+            InitialGameMoveTest.RunTest();
+            Console.WriteLine();
+
             // Run all piece tests
             RookTests.RunAllTests();
             KnightTests.RunAllTests();
