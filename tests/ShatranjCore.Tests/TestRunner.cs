@@ -22,13 +22,13 @@ namespace ShatranjCore.Tests
             // Run all piece tests
             RookTests.RunAllTests();
             KnightTests.RunAllTests();
-            // BishopTests.RunAllTests();  // TODO: Implement
-            // QueenTests.RunAllTests();   // TODO: Implement
-            // KingTests.RunAllTests();    // TODO: Implement
-            // PawnTests.RunAllTests();    // TODO: Implement
+            BishopTests.RunAllTests();
+            QueenTests.RunAllTests();
+            KingTests.RunAllTests();
+            PawnTests.RunAllTests();
 
-            Console.WriteLine("═══════════════════════════════════════════════════════════════");
-            Console.WriteLine($"Test Suite Complete");
+            Console.WriteLine("\n═══════════════════════════════════════════════════════════════");
+            Console.WriteLine($"Test Suite Complete - All Piece Movement Tests Run");
             Console.WriteLine("═══════════════════════════════════════════════════════════════");
             Console.WriteLine();
             Console.WriteLine("Press any key to exit...");

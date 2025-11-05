@@ -140,13 +140,24 @@ namespace ShatranjCore
         /// <summary>
         /// Gets all legal moves for a piece (moves that don't leave king in check).
         /// </summary>
-        public List<Move> GetLegalMoves(IChessBoard board, Location pieceLocation, PieceColor color)
+        public List<Move> GetLegalMoves(IChessBoard board, Location pieceLocation, PieceColor color, Location? enPassantTarget = null)
         {
             Piece piece = board.GetPiece(pieceLocation);
             if (piece == null || piece.Color != color)
                 return new List<Move>();
 
-            List<Move> allMoves = piece.GetMoves(pieceLocation, board);
+            List<Move> allMoves;
+
+            // For pawns, include en passant moves if available
+            if (piece is Pawn pawn && enPassantTarget.HasValue)
+            {
+                allMoves = pawn.GetMovesWithEnPassant(pieceLocation, board, enPassantTarget);
+            }
+            else
+            {
+                allMoves = piece.GetMoves(pieceLocation, board);
+            }
+
             List<Move> legalMoves = new List<Move>();
 
             foreach (Move move in allMoves)

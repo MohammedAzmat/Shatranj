@@ -35,33 +35,108 @@ namespace ShatranjCore
 
         internal override List<Move> GetMoves(Location source, IChessBoard board)
         {
-            //throw new NotImplementedException();
-            //Check again if this piece is at source
-            List<Move> possibleMoves = new List<Move>();
-            if (this.GetType().Name == board.GetPiece(source).GetType().Name)
-            {
-                // |||| Pawn Moves ||||
-                //Empty block(s) ahead
-                int dirMult = GetDirectionMultiplier();
-                if (board.IsEmptyAt(source.Row + 1 * dirMult, source.Column))
-                {
-                    possibleMoves.Append(new Move(this, new Square(source.Row, source.Column, this), new Square(source.Row + 1 * dirMult, source.Column), null));
-                    if(!this.isMoved && (board.IsEmptyAt(source.Row + 2 * dirMult, source.Column)))
-                        possibleMoves.Append(new Move(this, new Square(source.Row, source.Column, this), new Square(source.Row + 2 * dirMult, source.Column), null));
-                }
-                //Capture
-                Location temp = new Location
-                {
-                    Row = source.Row + 1 * dirMult,
-                    Column = source.Column - 1
-                };
-                if (temp.Column >= 0 && ((!board.IsEmptyAt(temp.Row, temp.Column))&&(board.GetPiece(temp).Color != this.Color)))
-                    possibleMoves.Append(new Move(this, new Square(source.Row, source.Column, this), new Square(temp.Row, temp.Column, board.GetPiece(temp)), board.GetPiece(temp)));
-                //Similarly Right Capture
-                temp.Column = source.Column + 1;
-                if (temp.Column < 8 && ((!board.IsEmptyAt(temp.Row, temp.Column)) && (board.GetPiece(temp).Color != this.Color)))
-                    possibleMoves.Append(new Move(this, new Square(source.Row, source.Column, this), new Square(temp.Row, temp.Column, board.GetPiece(temp)), board.GetPiece(temp)));
+            return GetMovesWithEnPassant(source, board, null);
+        }
 
+        /// <summary>
+        /// Gets all possible moves for this pawn, including en passant if available.
+        /// </summary>
+        internal List<Move> GetMovesWithEnPassant(Location source, IChessBoard board, Location? enPassantTarget)
+        {
+            List<Move> possibleMoves = new List<Move>();
+
+            // Verify this piece is at source
+            Piece pieceAtSource = board.GetPiece(source);
+            if (pieceAtSource == null || pieceAtSource.GetType() != this.GetType())
+                return possibleMoves;
+
+            int dirMult = GetDirectionMultiplier();
+
+            // Forward moves
+            int oneForward = source.Row + (1 * dirMult);
+            if (board.IsInBounds(oneForward, source.Column) && board.IsEmptyAt(oneForward, source.Column))
+            {
+                possibleMoves.Add(new Move(
+                    this,
+                    new Square(source.Row, source.Column, this),
+                    new Square(oneForward, source.Column),
+                    null
+                ));
+
+                // Two square move from starting position
+                if (!this.isMoved)
+                {
+                    int twoForward = source.Row + (2 * dirMult);
+                    if (board.IsInBounds(twoForward, source.Column) && board.IsEmptyAt(twoForward, source.Column))
+                    {
+                        possibleMoves.Add(new Move(
+                            this,
+                            new Square(source.Row, source.Column, this),
+                            new Square(twoForward, source.Column),
+                            null
+                        ));
+                    }
+                }
+            }
+
+            // Diagonal captures (left)
+            int captureRow = source.Row + (1 * dirMult);
+            int leftColumn = source.Column - 1;
+            if (board.IsInBounds(captureRow, leftColumn))
+            {
+                Piece leftPiece = board.GetPiece(new Location(captureRow, leftColumn));
+                if (leftPiece != null && leftPiece.Color != this.Color)
+                {
+                    possibleMoves.Add(new Move(
+                        this,
+                        new Square(source.Row, source.Column, this),
+                        new Square(captureRow, leftColumn, leftPiece),
+                        leftPiece
+                    ));
+                }
+            }
+
+            // Diagonal captures (right)
+            int rightColumn = source.Column + 1;
+            if (board.IsInBounds(captureRow, rightColumn))
+            {
+                Piece rightPiece = board.GetPiece(new Location(captureRow, rightColumn));
+                if (rightPiece != null && rightPiece.Color != this.Color)
+                {
+                    possibleMoves.Add(new Move(
+                        this,
+                        new Square(source.Row, source.Column, this),
+                        new Square(captureRow, rightColumn, rightPiece),
+                        rightPiece
+                    ));
+                }
+            }
+
+            // En passant capture
+            if (enPassantTarget.HasValue)
+            {
+                Location target = enPassantTarget.Value;
+
+                // Check if we can capture via en passant (diagonally to the en passant target square)
+                if (target.Row == captureRow)
+                {
+                    if (target.Column == leftColumn || target.Column == rightColumn)
+                    {
+                        // The capturable pawn is on the same row as us, adjacent column
+                        Location capturablePawnLocation = new Location(source.Row, target.Column);
+                        Piece capturablePawn = board.GetPiece(capturablePawnLocation);
+
+                        if (capturablePawn != null && capturablePawn is Pawn && capturablePawn.Color != this.Color)
+                        {
+                            possibleMoves.Add(new Move(
+                                this,
+                                new Square(source.Row, source.Column, this),
+                                new Square(target.Row, target.Column),
+                                capturablePawn // The pawn being captured
+                            ));
+                        }
+                    }
+                }
             }
 
             return possibleMoves;

@@ -17,6 +17,7 @@ namespace ShatranjCore
         private readonly CastlingValidator castlingValidator;
         private readonly PawnPromotionHandler promotionHandler;
         private readonly CheckDetector checkDetector;
+        private readonly EnPassantTracker enPassantTracker;
         private readonly List<Piece> capturedPieces;
 
         private Player[] players;
@@ -33,6 +34,7 @@ namespace ShatranjCore
             castlingValidator = new CastlingValidator();
             promotionHandler = new PawnPromotionHandler();
             checkDetector = new CheckDetector();
+            enPassantTracker = new EnPassantTracker();
             capturedPieces = new List<Piece>();
             gameResult = GameResult.InProgress;
         }
@@ -56,6 +58,7 @@ namespace ShatranjCore
             gameResult = GameResult.InProgress;
             capturedPieces.Clear();
             moveHistory.Clear();
+            enPassantTracker.Reset();
 
             // Initialize players
             players = new Player[2];
@@ -244,8 +247,33 @@ namespace ShatranjCore
         {
             Piece capturedPiece = board.GetPiece(to);
             bool wasCapture = capturedPiece != null;
+            bool wasEnPassant = false;
 
-            if (wasCapture)
+            // Check for en passant capture
+            if (piece is Pawn && capturedPiece == null)
+            {
+                Location? enPassantCaptureLocation = enPassantTracker.GetEnPassantCaptureLocation();
+                if (enPassantCaptureLocation.HasValue)
+                {
+                    // Check if this move is to the en passant target square
+                    Location? enPassantTarget = enPassantTracker.GetEnPassantTarget();
+                    if (enPassantTarget.HasValue && to.Row == enPassantTarget.Value.Row && to.Column == enPassantTarget.Value.Column)
+                    {
+                        // This is an en passant capture - remove the pawn from the side square
+                        capturedPiece = board.GetPiece(enPassantCaptureLocation.Value);
+                        if (capturedPiece != null)
+                        {
+                            board.RemovePiece(enPassantCaptureLocation.Value);
+                            wasCapture = true;
+                            wasEnPassant = true;
+                            capturedPieces.Add(capturedPiece);
+                            renderer.DisplayInfo($"Pawn captures {capturedPiece.GetType().Name} en passant!");
+                        }
+                    }
+                }
+            }
+
+            if (wasCapture && !wasEnPassant)
             {
                 capturedPieces.Add(capturedPiece);
                 renderer.DisplayInfo($"{piece.GetType().Name} captures {capturedPiece.GetType().Name}!");
@@ -255,6 +283,16 @@ namespace ShatranjCore
             board.RemovePiece(from);
             board.PlacePiece(piece, to);
             piece.isMoved = true;
+
+            // Track pawn double moves for en passant
+            if (piece is Pawn)
+            {
+                int rowDiff = Math.Abs(to.Row - from.Row);
+                if (rowDiff == 2)
+                {
+                    enPassantTracker.RecordPawnDoubleMove(from, to);
+                }
+            }
 
             // Check for pawn promotion
             if (promotionHandler.NeedsPromotion(piece, to))
@@ -456,7 +494,9 @@ namespace ShatranjCore
             }
 
             // Get only legal moves (those that don't leave king in check)
-            List<Move> legalMoves = checkDetector.GetLegalMoves(board, command.From, currentPlayer);
+            // Include en passant target if available
+            Location? enPassantTarget = enPassantTracker.GetEnPassantTarget();
+            List<Move> legalMoves = checkDetector.GetLegalMoves(board, command.From, currentPlayer, enPassantTarget);
             renderer.DisplayPossibleMoves(command.From, legalMoves);
             WaitForKey();
         }
@@ -469,6 +509,7 @@ namespace ShatranjCore
             currentPlayer = currentPlayer == PieceColor.White ? PieceColor.Black : PieceColor.White;
             players[0].HasTurn = !players[0].HasTurn;
             players[1].HasTurn = !players[1].HasTurn;
+            enPassantTracker.NextTurn();
         }
 
         /// <summary>
