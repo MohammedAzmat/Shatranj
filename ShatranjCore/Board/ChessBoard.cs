@@ -72,7 +72,7 @@ namespace ShatranjCore.Board
             this.squares[source.Row, source.Column].Piece = null;
         }
 
-        internal bool IsEmptyAt(int row, int column)
+        public bool IsEmptyAt(int row, int column)
         {
             //throw new NotImplementedException();
             if (row > 7 || row < 0) return false;
@@ -140,7 +140,7 @@ namespace ShatranjCore.Board
             }
         }
 
-        internal Piece GetPiece(Location source)
+        public Piece GetPiece(Location source)
         {
             //throw new NotImplementedException();
             return squares[source.Row, source.Column].Piece;
