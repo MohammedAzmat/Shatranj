@@ -27,6 +27,9 @@ namespace ShatranjCore
                 case "move":
                     return ParseMoveCommand(parts);
 
+                case "castle":
+                    return ParseCastleCommand(parts);
+
                 case "help":
                     return ParseHelpCommand(parts);
 
@@ -81,6 +84,58 @@ namespace ShatranjCore
                 Type = CommandType.Move,
                 From = from.Value,
                 To = to.Value
+            };
+        }
+
+        /// <summary>
+        /// Parses a castle command: castle [side]
+        /// Valid: castle, castle king, castle queen, castle k, castle q
+        /// </summary>
+        private GameCommand ParseCastleCommand(string[] parts)
+        {
+            if (parts.Length == 1)
+            {
+                // Just "castle" - need to prompt user
+                return new GameCommand { Type = CommandType.Castle, CastleSide = null };
+            }
+            else if (parts.Length == 2)
+            {
+                // "castle [side]" - parse the side
+                string side = parts[1].ToLower();
+
+                switch (side)
+                {
+                    case "king":
+                    case "kingside":
+                    case "k":
+                        return new GameCommand
+                        {
+                            Type = CommandType.Castle,
+                            CastleSide = CastlingSide.Kingside
+                        };
+
+                    case "queen":
+                    case "queenside":
+                    case "q":
+                        return new GameCommand
+                        {
+                            Type = CommandType.Castle,
+                            CastleSide = CastlingSide.Queenside
+                        };
+
+                    default:
+                        return new GameCommand
+                        {
+                            Type = CommandType.Invalid,
+                            ErrorMessage = "Invalid castle side. Use: castle king/queen/k/q"
+                        };
+                }
+            }
+
+            return new GameCommand
+            {
+                Type = CommandType.Invalid,
+                ErrorMessage = "Invalid castle command. Usage: castle [king|queen|k|q]"
             };
         }
 
@@ -195,6 +250,8 @@ namespace ShatranjCore
         public CommandType Type { get; set; }
         public Location From { get; set; }
         public Location To { get; set; }
+        public CastlingSide? CastleSide { get; set; }
+        public Type PromotionPiece { get; set; }
         public string ErrorMessage { get; set; }
     }
 
@@ -205,6 +262,7 @@ namespace ShatranjCore
     {
         Invalid,
         Move,
+        Castle,
         ShowMoves,
         ShowHelp,
         ShowHistory,

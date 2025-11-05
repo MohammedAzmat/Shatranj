@@ -14,6 +14,8 @@ namespace ShatranjCore
         private readonly ConsoleBoardRenderer renderer;
         private readonly CommandParser commandParser;
         private readonly MoveHistory moveHistory;
+        private readonly CastlingValidator castlingValidator;
+        private readonly PawnPromotionHandler promotionHandler;
         private readonly List<Piece> capturedPieces;
 
         private Player[] players;
@@ -27,6 +29,8 @@ namespace ShatranjCore
             renderer = new ConsoleBoardRenderer();
             commandParser = new CommandParser();
             moveHistory = new MoveHistory();
+            castlingValidator = new CastlingValidator();
+            promotionHandler = new PawnPromotionHandler();
             capturedPieces = new List<Piece>();
             gameResult = GameResult.InProgress;
         }
@@ -102,6 +106,10 @@ namespace ShatranjCore
             {
                 case CommandType.Move:
                     HandleMoveCommand(command);
+                    break;
+
+                case CommandType.Castle:
+                    HandleCastleCommand(command);
                     break;
 
                 case CommandType.ShowMoves:
@@ -215,6 +223,39 @@ namespace ShatranjCore
             board.PlacePiece(piece, to);
             piece.isMoved = true;
 
+            // Check for pawn promotion
+            if (promotionHandler.NeedsPromotion(piece, to))
+            {
+                Type promotionPiece = promotionHandler.PromptForPromotion(currentPlayer);
+
+                if (promotionPiece == null)
+                {
+                    // User pressed ESC - cancel the move
+                    renderer.DisplayInfo("Move cancelled.");
+                    board.RemovePiece(to);
+                    board.PlacePiece(piece, from);
+                    piece.isMoved = false;
+
+                    if (wasCapture)
+                    {
+                        board.PlacePiece(capturedPiece, to);
+                        capturedPieces.Remove(capturedPiece);
+                    }
+
+                    WaitForKey();
+                    return;
+                }
+
+                // Create promoted piece
+                Piece promotedPiece = promotionHandler.CreatePromotionPiece(promotionPiece, to, currentPlayer);
+                board.RemovePiece(to);
+                board.PlacePiece(promotedPiece, to);
+                promotedPiece.isMoved = true;
+
+                renderer.DisplayInfo($"Pawn promoted to {promotionPiece.Name}!");
+                piece = promotedPiece; // Update piece reference for move history
+            }
+
             // Record the move
             Move move = new Move(
                 piece,
@@ -226,6 +267,135 @@ namespace ShatranjCore
             moveHistory.AddMove(move, currentPlayer, wasCapture);
 
             // TODO: Check for checkmate, stalemate, etc.
+        }
+
+        /// <summary>
+        /// Handles a castle command.
+        /// </summary>
+        private void HandleCastleCommand(GameCommand command)
+        {
+            try
+            {
+                // Check if user specified a side
+                CastlingSide? side = command.CastleSide;
+
+                // Check castling availability
+                bool canKingside = castlingValidator.CanCastleKingside(board, currentPlayer);
+                bool canQueenside = castlingValidator.CanCastleQueenside(board, currentPlayer);
+
+                if (!canKingside && !canQueenside)
+                {
+                    renderer.DisplayError("Castling is not available.");
+                    WaitForKey();
+                    return;
+                }
+
+                // If no side specified, or both options available, prompt user
+                if (side == null)
+                {
+                    if (!canKingside && canQueenside)
+                    {
+                        side = CastlingSide.Queenside;
+                    }
+                    else if (canKingside && !canQueenside)
+                    {
+                        side = CastlingSide.Kingside;
+                    }
+                    else
+                    {
+                        // Both available - prompt user
+                        side = PromptForCastlingSide();
+                        if (side == null)
+                        {
+                            renderer.DisplayInfo("Castling cancelled.");
+                            WaitForKey();
+                            return;
+                        }
+                    }
+                }
+
+                // Validate the chosen side is available
+                if (side == CastlingSide.Kingside && !canKingside)
+                {
+                    renderer.DisplayError("Kingside castling is not available.");
+                    WaitForKey();
+                    return;
+                }
+
+                if (side == CastlingSide.Queenside && !canQueenside)
+                {
+                    renderer.DisplayError("Queenside castling is not available.");
+                    WaitForKey();
+                    return;
+                }
+
+                // Execute castling
+                castlingValidator.ExecuteCastle(board, currentPlayer, side.Value);
+
+                string castleType = side == CastlingSide.Kingside ? "kingside" : "queenside";
+                renderer.DisplayInfo($"{currentPlayer} castles {castleType}!");
+
+                // Record the move in history
+                string notation = side == CastlingSide.Kingside ? "O-O" : "O-O-O";
+                // TODO: Add proper castling move to move history
+
+                // Switch turns
+                SwitchTurns();
+            }
+            catch (Exception ex)
+            {
+                renderer.DisplayError($"Error processing castle: {ex.Message}");
+                WaitForKey();
+            }
+        }
+
+        /// <summary>
+        /// Prompts user to choose castling side.
+        /// </summary>
+        private CastlingSide? PromptForCastlingSide()
+        {
+            Console.WriteLine();
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("Both castling options are available!");
+            Console.ResetColor();
+            Console.WriteLine("Choose a side:");
+            Console.WriteLine("  king/k      - Castles kingside  (O-O)");
+            Console.WriteLine("  queen/q     - Castle queenside (O-O-O)");
+            Console.WriteLine();
+            Console.WriteLine("Press ESC to cancel");
+            Console.WriteLine();
+
+            while (true)
+            {
+                Console.Write("Your choice: ");
+                var keyInfo = Console.ReadKey(intercept: false);
+                Console.WriteLine();
+
+                if (keyInfo.Key == ConsoleKey.Escape)
+                {
+                    return null;
+                }
+
+                string input = keyInfo.KeyChar.ToString().ToLower();
+
+                // Read rest of line if they're typing a full word
+                if (keyInfo.Key != ConsoleKey.Enter)
+                {
+                    string rest = Console.ReadLine();
+                    input += rest.ToLower().Trim();
+                }
+
+                // Parse the input
+                var tempCommand = commandParser.Parse($"castle {input.Trim()}");
+                if (tempCommand.Type == CommandType.Castle && tempCommand.CastleSide.HasValue)
+                {
+                    return tempCommand.CastleSide.Value;
+                }
+
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Invalid choice. Please enter: king/k or queen/q");
+                Console.ResetColor();
+            }
         }
 
         /// <summary>

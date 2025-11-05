@@ -195,12 +195,17 @@ namespace ShatranjCore
             Console.WriteLine("Available Commands:");
             Console.ResetColor();
             Console.WriteLine("  move [start] [end]  - Move a piece (e.g., 'move e2 e4')");
-            Console.WriteLine("  help                - Show possible moves for a piece");
+            Console.WriteLine("  castle [side]       - Castle (king/k, queen/q, or just 'castle' to be prompted)");
+            Console.WriteLine("  help [location]     - Show possible moves for a piece (e.g., 'help e2')");
+            Console.WriteLine("  help                - Show this command list");
+            Console.WriteLine("  history             - Display move history");
             Console.WriteLine("  game start          - Start a new game");
             Console.WriteLine("  game save           - Save current game");
             Console.WriteLine("  game end            - End current game");
             Console.WriteLine("  game restart        - Restart the game");
             Console.WriteLine("  quit                - Exit the game");
+            Console.WriteLine();
+            Console.WriteLine("Note: Press ESC to cancel during castling or pawn promotion prompts");
             Console.WriteLine();
         }
 
