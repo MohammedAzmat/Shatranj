@@ -27,8 +27,6 @@ namespace ShatranjCore.Pieces
             notation = color.ToString().Substring(0, 1).ToLower() + ((this.GetType().Name == "Knight")?this.GetType().Name.Substring(1,1).ToUpper():this.GetType().Name.Substring(0, 1));
         }
 
-        abstract public Square[] ValidMoves();
-        abstract public bool IsCaptured();
         public abstract List<Move> GetMoves(Location source, IChessBoard board);
         public abstract bool IsBlockingCheck(Location source, IChessBoard board);
         public abstract bool CanMove(Location source, Location destination, IChessBoard board);

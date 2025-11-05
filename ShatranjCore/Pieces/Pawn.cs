@@ -20,23 +20,6 @@ namespace ShatranjCore.Pieces
             startpos = true;
         }
 
-        
-        public override bool IsCaptured()
-        {
-            // A piece is captured when it's been removed from the board
-            // This will be implemented when we add captured piece tracking
-            return false;
-        }
-
-        public override Square[] ValidMoves()
-        {
-            throw new NotImplementedException();
-        }
-
-        private bool PromotionAvailable()
-        {
-            return ((location.Row == 0 && direction == PawnMoves.Up) || (location.Row == 7 && direction == PawnMoves.Down)) ? true : false;
-        }
 
         public override List<Move> GetMoves(Location source, IChessBoard board)
         {

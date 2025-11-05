@@ -54,15 +54,6 @@ namespace ShatranjCore.Board
             fallenSet[0] = new PieceSet(PieceColor.Black);
             fallenSet[1] = new PieceSet(PieceColor.White);
             InitializeBoard(p1color);
-            
-            //if (p1color == PieceColor.Black)
-            //{
-            //    //Collection of Pieces on Board
-            //    boardSet[0] = new PieceSet();
-            //    boardSet[0].PieceSetColor = p1color;
-            //}
-
-            
         }
 
         public ChessBoard(ChessBoard board, Location source, Location destination)
@@ -74,7 +65,6 @@ namespace ShatranjCore.Board
 
         public bool IsEmptyAt(int row, int column)
         {
-            //throw new NotImplementedException();
             if (row > 7 || row < 0) return false;
             if (column > 7 || column < 0) return false;
             return (squares[row, column].Piece == null) ? true : false;
@@ -90,7 +80,6 @@ namespace ShatranjCore.Board
 
         private void InitializeBoard(PieceColor p1color)
         {
-            //throw new NotImplementedException();
             squares = new Square[8,8];
 
             /* Each Line of the board should be like this.
@@ -112,7 +101,6 @@ namespace ShatranjCore.Board
 
         private void InitializeRest()
         {
-            //throw new NotImplementedException();
             //Row 3 - 6 should be empty
             for (int i = 0; i < 8; i++)
                 for (int j = 0; j < 8; j++)
@@ -121,7 +109,6 @@ namespace ShatranjCore.Board
 
         private void InitializeInfantry(PieceColor p1color)
         {
-            //throw new NotImplementedException();
             // Row 1 (Black pawns) and Row 6 (White pawns)
             for (int i = 1; i < 8; i+=5)
             {
@@ -134,25 +121,19 @@ namespace ShatranjCore.Board
 
                 for (int j = 0; j < 8; j++)
                 {
-                    //squares[i, j] = new Square(i, j, new Pawn(i, j, ChangePlayerColor(p1color),direction));
                     squares[i, j].Piece = new Pawn(i, j, p1color, direction);
                     boardSet[index].Pieces.Add(squares[i, j].Piece);
-
                 }
             }
         }
 
         public Piece GetPiece(Location source)
         {
-            //throw new NotImplementedException();
             return squares[source.Row, source.Column].Piece;
         }
 
         private void InitializeSplForces(PieceColor p1color)
         {
-            //throw new NotImplementedException();
-            
-
             for (int i = 0; i < 8; i+=7)
             {
                 //Because we set player 2 first, from chess board perspective
@@ -164,39 +145,30 @@ namespace ShatranjCore.Board
                         //Rook
                         case 0:
                         case 7:
-                            //squares[i, j] = new Square(i, j, new Rook(i, j, p1color));
                             squares[i, j].Piece = new Rook(i, j, p1color);
                             boardSet[index].Pieces.Add(squares[i, j].Piece);
                             break;
                         //Knight
                         case 1:
                         case 6:
-                            //squares[i, j] = new Square(i, j, new Knight(i, j, p1color));
                             squares[i, j].Piece = new Knight(i, j, p1color);
                             boardSet[index].Pieces.Add(squares[i, j].Piece);
-
                             break;
                         //Bishop
                         case 2:
                         case 5:
-                            //squares[i, j] = new Square(i, j, new Bishop(i, j, p1color));
                             squares[i, j].Piece = new Bishop(i, j, p1color);
                             boardSet[index].Pieces.Add(squares[i, j].Piece);
-
                             break;
                         //Queen
                         case 3:
-                            //squares[i, j] = new Square(i, j, new Queen(i, j, p1color));
                             squares[i, j].Piece = new Queen(i, j, p1color);
                             boardSet[index].Pieces.Add(squares[i, j].Piece);
-
                             break;
                         //King
                         case 4:
-                            //squares[i, j] = new Square(i, j, new King(i, j, p1color));
                             squares[i, j].Piece = new King(i, j, p1color);
                             boardSet[index].Pieces.Add(squares[i, j].Piece);
-
                             break;
                     }
             }
@@ -213,36 +185,6 @@ namespace ShatranjCore.Board
         private PawnMoves ChangeDirection(PawnMoves direction)
         { return (direction == PawnMoves.Down) ? PawnMoves.Up : PawnMoves.Down; }
 
-        internal void DisplayCurrentBoard()
-        {
-
-            string dash = "|--------------------------------------------------------------|";
-            string colLable = "\t | aA\t| bB\t| cC\t| dD\t| eE\t| fF\t| gG\t| hH\t|";
-            string footer = "";
-
-            Console.Clear();
-            for (int i = 0; i < 8; i++)
-            {
-                Console.Write("\t "+dash+"\n\t ");
-                for (int j = 0; j < 8; j++)
-                    Console.Write("|\t");
-                Console.Write("|\n\t"+(8-i));
-                for (int j = 0; j < 8; j++)
-                    Console.Write("| " + ((squares[i, j].Piece == null) ? "__" : squares[i, j].Piece.Notation) + "\t");
-                Console.Write("|\n\t ");
-                for (int j = 0; j < 8; j++)
-                    Console.Write("|\t");
-                Console.WriteLine("|");
-
-            }
-            Console.WriteLine("\t "+dash+"\n"+ colLable);
-            Console.WriteLine("\tPlease Enter to play, Press ESC to quite playing.");
-
-
-
-        }
-
-        public List<Piece> GetOppPieces(PieceColor color) { return new List<Piece>(); }
 
         #endregion
 
@@ -254,7 +196,7 @@ namespace ShatranjCore.Board
         public List<Piece> GetPiecesOfColor(PieceColor color)
         {
             int index = (color == PieceColor.Black) ? 0 : 1;
-            return boardSet[index].Pieces.Where(p => p != null && !p.IsCaptured()).ToList();
+            return boardSet[index].Pieces.Where(p => p != null).ToList();
         }
 
         /// <summary>

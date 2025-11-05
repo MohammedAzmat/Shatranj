@@ -15,18 +15,6 @@ namespace ShatranjCore.Pieces
         {
         }
 
-        public override bool IsCaptured()
-        {
-            // A piece is captured when it's been removed from the board
-            // This will be implemented when we add captured piece tracking
-            return false;
-        }
-
-        public override Square[] ValidMoves()
-        {
-            throw new NotImplementedException();
-        }
-
         public override List<Move> GetMoves(Location source, IChessBoard board)
         {
             List<Move> possibleMoves = new List<Move>();

@@ -23,17 +23,6 @@ namespace ShatranjCore.Pieces
             isChecked = false;
         }
 
-        public override bool IsCaptured()
-        {
-            // King cannot be captured in regular chess - checkmate ends the game
-            return false;
-        }
-
-        public override Square[] ValidMoves()
-        {
-            throw new NotImplementedException();
-        }
-
         public override List<Move> GetMoves(Location source, IChessBoard board)
         {
             List<Move> possibleMoves = new List<Move>();
