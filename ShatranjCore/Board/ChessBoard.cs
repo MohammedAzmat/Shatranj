@@ -122,12 +122,15 @@ namespace ShatranjCore.Board
         private void InitializeInfantry(PieceColor p1color)
         {
             //throw new NotImplementedException();
-            // Row 2 and 7
-            PawnMoves direction = PawnMoves.Down;
+            // Row 1 (Black pawns) and Row 6 (White pawns)
             for (int i = 1; i < 8; i+=5)
             {
                 p1color = ChangePlayerColor(p1color);
                 int index = (p1color == PieceColor.Black) ? 0 : 1;
+
+                // Black pawns (row 1) move Down (increasing row index)
+                // White pawns (row 6) move Up (decreasing row index)
+                PawnMoves direction = (p1color == PieceColor.Black) ? PawnMoves.Down : PawnMoves.Up;
 
                 for (int j = 0; j < 8; j++)
                 {
@@ -136,7 +139,6 @@ namespace ShatranjCore.Board
                     boardSet[index].Pieces.Add(squares[i, j].Piece);
 
                 }
-                direction = ChangeDirection(direction);
             }
         }
 
