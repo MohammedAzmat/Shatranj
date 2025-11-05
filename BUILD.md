@@ -6,9 +6,9 @@ This document provides comprehensive instructions for building and testing the S
 
 ### Required Software
 
-1. **.NET 8 SDK**
-   - Download from: https://dotnet.microsoft.com/download/dotnet/8.0
-   - Verify installation: `dotnet --version` (should show 8.0.x or higher)
+1. **.NET 9 SDK**
+   - Download from: https://dotnet.microsoft.com/download/dotnet/9.0
+   - Verify installation: `dotnet --version` (should show 9.0.x or higher)
 
 2. **IDE (Choose one)**
    - **Visual Studio 2022** (Community, Professional, or Enterprise)
@@ -28,7 +28,7 @@ This document provides comprehensive instructions for building and testing the S
 - ✅ **Linux** - Supported (command-line only)
 - ✅ **macOS** - Supported (command-line only)
 
-Note: The Windows Forms GUI project (ShatranjMain) only builds on Windows with .NET 8.0-windows target framework.
+Note: The Windows Forms GUI project (ShatranjMain) only builds on Windows with .NET 9.0-windows target framework.
 
 ---
 
@@ -129,10 +129,10 @@ dotnet run
 
 ```bash
 # After building, run the executable
-./ShatranjCMD/bin/Debug/net8.0/ShatranjCMD
+./ShatranjCMD/bin/Debug/net9.0/ShatranjCMD
 
 # Or on Windows
-ShatranjCMD\bin\Debug\net8.0\ShatranjCMD.exe
+ShatranjCMD\bin\Debug\net9.0\ShatranjCMD.exe
 ```
 
 ### Windows Forms GUI (ShatranjMain) - Windows Only
@@ -282,7 +282,7 @@ dotnet publish ShatranjCMD/ShatranjCMD.csproj \
 
 ### Framework-Dependent Deployment
 
-Smaller size, requires .NET 8 runtime installed:
+Smaller size, requires .NET 9 runtime installed:
 
 ```bash
 dotnet publish ShatranjCMD/ShatranjCMD.csproj \
@@ -298,15 +298,15 @@ dotnet publish ShatranjCMD/ShatranjCMD.csproj \
 
 #### "SDK not found" Error
 
-**Problem**: .NET 8 SDK not installed or not in PATH.
+**Problem**: .NET 9 SDK not installed or not in PATH.
 
 **Solution**:
 ```bash
 # Check .NET version
 dotnet --version
 
-# Install .NET 8 SDK if not present
-# Download from: https://dotnet.microsoft.com/download/dotnet/8.0
+# Install .NET 9 SDK if not present
+# Download from: https://dotnet.microsoft.com/download/dotnet/9.0
 ```
 
 #### "Project file not found" Error
@@ -324,13 +324,13 @@ dotnet build
 
 #### "Target framework not supported" Error
 
-**Problem**: Trying to build .NET 8 project without .NET 8 SDK.
+**Problem**: Trying to build .NET 9 project without .NET 9 SDK.
 
-**Solution**: Install .NET 8 SDK or higher.
+**Solution**: Install .NET 9 SDK or higher.
 
 #### Windows Forms Project Won't Build on Linux/Mac
 
-**Expected behavior**: The `ShatranjMain` project targets `net8.0-windows` and requires Windows to build.
+**Expected behavior**: The `ShatranjMain` project targets `net9.0-windows` and requires Windows to build.
 
 **Solution**: Build only command-line projects on non-Windows platforms:
 ```bash
@@ -397,21 +397,21 @@ dotnet watch --project ShatranjCMD run
 Shatranj/
 ├── Shatranj.sln                  # Solution file
 ├── ShatranjCore/                 # Core game logic library
-│   └── ShatranjCore.csproj      # .NET 8 library
+│   └── ShatranjCore.csproj      # .NET 9 library
 ├── ShatranjCMD/                  # Command-line application
-│   └── ShatranjCMD.csproj       # .NET 8 console app
+│   └── ShatranjCMD.csproj       # .NET 9 console app
 ├── ShatranjMain/                 # Windows Forms GUI
-│   └── ShatranjMain.csproj      # .NET 8 Windows app
+│   └── ShatranjMain.csproj      # .NET 9 Windows app
 └── tests/
     └── ShatranjCore.Tests/       # Unit tests
-        └── ShatranjCore.Tests.csproj  # .NET 8 test project
+        └── ShatranjCore.Tests.csproj  # .NET 9 test project
 ```
 
 ---
 
 ## Additional Resources
 
-- **.NET 8 Documentation**: https://docs.microsoft.com/dotnet/core/whats-new/dotnet-8
+- **.NET 9 Documentation**: https://docs.microsoft.com/dotnet/core/whats-new/dotnet-8
 - **Project Documentation**: See `docs/` folder
   - `PROJECT_ROADMAP.md` - Development phases
   - `SOLID_PRINCIPLES.md` - Architecture guide
@@ -424,7 +424,7 @@ Shatranj/
 
 If you encounter build issues:
 
-1. **Check Prerequisites**: Ensure .NET 8 SDK is installed
+1. **Check Prerequisites**: Ensure .NET 9 SDK is installed
 2. **Read Error Messages**: They usually indicate the exact problem
 3. **Clean and Rebuild**: Often resolves caching issues
 4. **Check Documentation**: Review this file and project README
@@ -434,7 +434,7 @@ If you encounter build issues:
 ---
 
 **Last Updated**: 2025-11-05
-**Target Framework**: .NET 8.0
+**Target Framework**: .NET 9.0
 **Supported Platforms**: Windows, Linux, macOS
 
 ---
