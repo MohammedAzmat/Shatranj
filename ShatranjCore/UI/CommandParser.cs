@@ -1,7 +1,8 @@
 using System;
 using System.Linq;
+using ShatranjCore.Validators;
 
-namespace ShatranjCore
+namespace ShatranjCore.UI
 {
     /// <summary>
     /// Parses user commands for the chess game.

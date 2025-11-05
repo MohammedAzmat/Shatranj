@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ShatranjCore.Movement;
 
-namespace ShatranjCore
+namespace ShatranjCore.Game
 {
     public enum PlayerType { Human, AI}
     public class Player

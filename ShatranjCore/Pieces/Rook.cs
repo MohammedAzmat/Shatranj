@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ShatranjCore.Board;
+using ShatranjCore.Interfaces;
 
-namespace ShatranjCore
+namespace ShatranjCore.Pieces
 {
-    public class Bishop : Piece
+    public class Rook : Piece
     {
-        public Bishop(int i, int j, PieceColor pc) : base(i,j,pc)
+        public Rook(int i, int j, PieceColor pcolor) : base(i, j, pcolor)
         {
         }
 
@@ -24,14 +26,6 @@ namespace ShatranjCore
             throw new NotImplementedException();
         }
 
-        internal override bool CanMove(Location source, Location destination, IChessBoard board)
-        {
-            List<Move> validMoves = GetMoves(source, board);
-            return validMoves.Any(m =>
-                m.To.Location.Row == destination.Row &&
-                m.To.Location.Column == destination.Column);
-        }
-
         internal override List<Move> GetMoves(Location source, IChessBoard board)
         {
             List<Move> possibleMoves = new List<Move>();
@@ -41,13 +35,13 @@ namespace ShatranjCore
             if (pieceAtSource == null || pieceAtSource.GetType() != this.GetType())
                 return possibleMoves;
 
-            // Bishop moves diagonally in 4 directions
+            // Rook moves in 4 directions: up, down, left, right
             // Direction vectors: (row_delta, col_delta)
             int[,] directions = {
-                {-1, -1},  // Up-Left
-                {-1, 1},   // Up-Right
-                {1, -1},   // Down-Left
-                {1, 1}     // Down-Right
+                {-1, 0},  // Up
+                {1, 0},   // Down
+                {0, -1},  // Left
+                {0, 1}    // Right
             };
 
             for (int dir = 0; dir < 4; dir++)
@@ -98,6 +92,14 @@ namespace ShatranjCore
             }
 
             return possibleMoves;
+        }
+
+        internal override bool CanMove(Location source, Location destination, IChessBoard board)
+        {
+            List<Move> validMoves = GetMoves(source, board);
+            return validMoves.Any(m =>
+                m.To.Location.Row == destination.Row &&
+                m.To.Location.Column == destination.Column);
         }
 
         internal override bool IsBlockingCheck(Location source, IChessBoard board)

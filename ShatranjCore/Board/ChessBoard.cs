@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ShatranjCore.Interfaces;
+using ShatranjCore.Pieces;
+using ShatranjCore.Utilities;
 
-namespace ShatranjCore
+namespace ShatranjCore.Board
 {
     public class ChessBoard : IChessBoard
     {

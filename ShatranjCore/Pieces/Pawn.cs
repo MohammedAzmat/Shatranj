@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ShatranjCore.Board;
+using ShatranjCore.Interfaces;
 
-namespace ShatranjCore
+namespace ShatranjCore.Pieces
 {
     public class Pawn : Piece
     {

@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ShatranjCore.Board;
+using ShatranjCore.Pieces;
 
-namespace ShatranjCore
+namespace ShatranjCore.Movement
 {
     /// <summary>
     /// Tracks the history of moves in a chess game.

@@ -1,8 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ShatranjCore.Board;
+using ShatranjCore.Handlers;
+using ShatranjCore.Interfaces;
+using ShatranjCore.Movement;
+using ShatranjCore.Pieces;
+using ShatranjCore.UI;
+using ShatranjCore.Validators;
 
-namespace ShatranjCore
+namespace ShatranjCore.Game
 {
     /// <summary>
     /// Enhanced Chess Game with improved terminal UI and command system.

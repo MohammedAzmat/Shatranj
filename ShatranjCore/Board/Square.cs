@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ShatranjCore.Pieces;
 
-namespace ShatranjCore
+namespace ShatranjCore.Board
 {
     public class Square
     {

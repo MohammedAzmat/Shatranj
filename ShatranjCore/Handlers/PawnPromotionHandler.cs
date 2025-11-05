@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
+using ShatranjCore.Pieces;
 
-namespace ShatranjCore
+namespace ShatranjCore.Handlers
 {
     /// <summary>
     /// Handles pawn promotion logic and user interaction.

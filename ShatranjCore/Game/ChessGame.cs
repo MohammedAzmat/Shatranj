@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ShatranjCore.Board;
+using ShatranjCore.Pieces;
 
-namespace ShatranjCore
+namespace ShatranjCore.Game
 {
     /// <summary>
     /// Class for Top Most functionality of the game, it sets up the game and it's environment.

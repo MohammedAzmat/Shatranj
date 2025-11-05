@@ -1,6 +1,6 @@
 using System;
 
-namespace ShatranjCore
+namespace ShatranjCore.Validators
 {
     /// <summary>
     /// Tracks en passant opportunities.

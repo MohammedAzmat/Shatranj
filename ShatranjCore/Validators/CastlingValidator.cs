@@ -1,6 +1,8 @@
 using System;
+using ShatranjCore.Interfaces;
+using ShatranjCore.Pieces;
 
-namespace ShatranjCore
+namespace ShatranjCore.Validators
 {
     /// <summary>
     /// Validator for castling moves.

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
+using ShatranjCore.Pieces;
 
-namespace ShatranjCore
+namespace ShatranjCore.Interfaces
 {
     /// <summary>
     /// Interface for chess board implementations.

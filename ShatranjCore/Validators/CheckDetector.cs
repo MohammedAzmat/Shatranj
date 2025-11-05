@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ShatranjCore.Interfaces;
+using ShatranjCore.Movement;
+using ShatranjCore.Pieces;
 
-namespace ShatranjCore
+namespace ShatranjCore.Validators
 {
     /// <summary>
     /// Detects check, checkmate, and stalemate conditions.

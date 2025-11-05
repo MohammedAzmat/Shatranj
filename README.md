@@ -307,47 +307,86 @@ Your choice: q
 
 ## 🏗️ Project Structure
 
+The project follows a **modular architecture** with clear separation of concerns:
+
 ```
 Shatranj/
-├── ShatranjCore/              # Core game logic (DLL)
-│   ├── Pieces/                # Piece implementations
-│   │   ├── Piece.cs          # Abstract base class
-│   │   ├── King.cs
-│   │   ├── Queen.cs
-│   │   ├── Rook.cs
-│   │   ├── Bishop.cs
-│   │   ├── Knight.cs
-│   │   └── Pawn.cs
-│   ├── IChessBoard.cs         # Board interface (DIP)
-│   ├── ChessBoard.cs          # Board implementation
-│   ├── EnhancedChessGame.cs   # Game orchestration
-│   ├── CommandParser.cs       # Command parsing (SRP)
-│   ├── ConsoleBoardRenderer.cs # Terminal display (SRP)
-│   ├── MoveHistory.cs         # Move tracking (SRP)
-│   ├── CastlingValidator.cs   # Castling logic (SRP)
-│   ├── PawnPromotionHandler.cs # Promotion logic (SRP)
-│   ├── CheckDetector.cs       # Check/checkmate detection (SRP)
-│   └── EnPassantTracker.cs    # En passant tracking (SRP)
+├── ShatranjCore/              # Core game engine library
+│   ├── Models.cs              # Base types (Location, PieceColor, Move, etc.)
+│   ├── Pieces/                # ♟️ Chess piece implementations
+│   │   ├── Piece.cs           # Abstract base class for all pieces
+│   │   ├── Pawn.cs            # Pawn (most complex: en passant, promotion)
+│   │   ├── Rook.cs            # Rook (horizontal/vertical movement)
+│   │   ├── Knight.cs          # Knight (L-shaped, jumps pieces)
+│   │   ├── Bishop.cs          # Bishop (diagonal movement)
+│   │   ├── Queen.cs           # Queen (rook + bishop combined)
+│   │   └── King.cs            # King (1-square moves, castling)
+│   ├── Board/                 # 🎲 Board representation
+│   │   ├── ChessBoard.cs      # 8x8 board implementation
+│   │   └── Square.cs          # Individual square state
+│   ├── Interfaces/            # 📋 Abstractions (Dependency Inversion)
+│   │   └── IChessBoard.cs     # Board interface for loose coupling
+│   ├── Game/                  # 🎮 Game orchestration & flow
+│   │   ├── EnhancedChessGame.cs # Main game controller
+│   │   ├── ChessGame.cs       # Original simple implementation
+│   │   └── Player.cs          # Player state & turn management
+│   ├── Movement/              # 🔄 Move execution & tracking
+│   │   ├── MoveMaker.cs       # Executes moves & updates board
+│   │   └── MoveHistory.cs     # Tracks game history for undo/PGN
+│   ├── Validators/            # ✅ Rule validation (Single Responsibility)
+│   │   ├── CheckDetector.cs   # Check/checkmate/stalemate detection
+│   │   ├── CastlingValidator.cs # Validates castling legality
+│   │   └── EnPassantTracker.cs # Tracks en passant opportunities
+│   ├── UI/                    # 🖥️ User interface
+│   │   ├── ConsoleBoardRenderer.cs # Terminal board display
+│   │   └── CommandParser.cs   # Input parsing (e2-e4 format)
+│   ├── Handlers/              # 🎯 Special move handlers
+│   │   └── PawnPromotionHandler.cs # Pawn promotion logic
+│   └── Utilities/             # 🛠️ Helper classes
+│       ├── Utilities.cs       # General utility functions
+│       └── PieceSet.cs        # Piece collection management
+│
 ├── ShatranjCMD/               # Console application
-│   └── Program.cs             # Entry point
-├── ShatranjMain/              # Windows Forms GUI (Phase 5)
-├── tests/                     # Unit tests
-│   ├── ShatranjCore.Tests/   # Core logic tests
-│   │   ├── PieceTests/
-│   │   │   ├── RookTests.cs     # 6 tests
-│   │   │   ├── KnightTests.cs   # 6 tests
-│   │   │   ├── BishopTests.cs   # 6 tests
-│   │   │   ├── QueenTests.cs    # 6 tests
-│   │   │   ├── KingTests.cs     # 6 tests
-│   │   │   └── PawnTests.cs     # 10 tests
-│   │   └── TestRunner.cs
-│   └── README.md
-├── docs/                      # Documentation
-│   ├── PROJECT_ROADMAP.md     # Development phases
-│   ├── SOLID_PRINCIPLES.md    # Architecture guide
-│   └── TERMINAL_COMMANDS.md   # Command reference
-└── README.md                  # This file
+│   └── Program.cs             # Entry point for CLI chess game
+│
+├── ShatranjMain/              # Windows Forms GUI (Phase 5 - future)
+│
+├── tests/                     # Comprehensive test suite
+│   └── ShatranjCore.Tests/
+│       ├── TestRunner.cs      # Main test runner
+│       └── PieceTests/        # 40 unit tests (100% piece coverage)
+│           ├── RookTests.cs   # 6 tests
+│           ├── KnightTests.cs # 5 tests
+│           ├── BishopTests.cs # 5 tests
+│           ├── QueenTests.cs  # 7 tests
+│           ├── KingTests.cs   # 8 tests (includes castling)
+│           └── PawnTests.cs   # 9 tests (includes en passant)
+│
+└── docs/                      # Comprehensive documentation
+    ├── PROJECT_DETAILS.md     # Complete project information (for LLMs)
+    ├── ARCHITECTURE.md        # Technical architecture & design patterns
+    ├── PROJECT_ROADMAP.md     # Development phases & timeline
+    ├── SOLID_PRINCIPLES.md    # SOLID analysis & refactoring history
+    ├── BUILD.md               # Build & troubleshooting guide
+    └── DOTNET9_UPGRADE.md     # .NET migration documentation
 ```
+
+### Namespace Organization
+
+The project uses **modular namespaces** for better code organization:
+
+- `ShatranjCore` - Root namespace (base types & models)
+- `ShatranjCore.Pieces` - All piece classes
+- `ShatranjCore.Board` - Board representation
+- `ShatranjCore.Interfaces` - IChessBoard interface
+- `ShatranjCore.Game` - Game orchestration
+- `ShatranjCore.Movement` - Move execution
+- `ShatranjCore.Validators` - Rule validation
+- `ShatranjCore.UI` - User interface
+- `ShatranjCore.Handlers` - Special handlers
+- `ShatranjCore.Utilities` - Utilities
+
+**Benefits**: Easy to find related code, minimal coupling, supports SOLID principles.
 
 ## 🔧 Development
 
@@ -472,9 +511,12 @@ Contributions are welcome! Please:
 
 ## 📚 Documentation
 
+- **[Project Details](docs/PROJECT_DETAILS.md)** - Comprehensive project information
+- **[Architecture](docs/ARCHITECTURE.md)** - Technical architecture & design patterns
 - **[Project Roadmap](docs/PROJECT_ROADMAP.md)** - Development phases and timeline
-- **[SOLID Principles](docs/SOLID_PRINCIPLES.md)** - Architecture and design decisions
-- **[Terminal Commands](docs/TERMINAL_COMMANDS.md)** - Detailed command reference
+- **[SOLID Principles](docs/SOLID_PRINCIPLES.md)** - SOLID analysis and refactoring history
+- **[Build Guide](docs/BUILD.md)** - Build instructions and troubleshooting
+- **[.NET 9 Upgrade](docs/DOTNET9_UPGRADE.md)** - Migration documentation
 
 ## 📄 License
 

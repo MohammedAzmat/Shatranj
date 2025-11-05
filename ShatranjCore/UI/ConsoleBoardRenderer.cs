@@ -2,8 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ShatranjCore.Interfaces;
+using ShatranjCore.Movement;
+using ShatranjCore.Pieces;
 
-namespace ShatranjCore
+namespace ShatranjCore.UI
 {
     /// <summary>
     /// Renders the chess board to the console with enhanced visualization.

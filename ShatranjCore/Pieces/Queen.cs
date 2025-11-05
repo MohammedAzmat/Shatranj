@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ShatranjCore.Board;
+using ShatranjCore.Interfaces;
 
-namespace ShatranjCore
+namespace ShatranjCore.Pieces
 {
-    public class Rook : Piece
+    public class Queen : Piece
     {
-        public Rook(int i, int j, PieceColor pcolor) : base(i, j, pcolor)
+        public Queen(int i, int j, PieceColor p1color) : base(i,j,p1color)
         {
         }
 
@@ -33,16 +35,20 @@ namespace ShatranjCore
             if (pieceAtSource == null || pieceAtSource.GetType() != this.GetType())
                 return possibleMoves;
 
-            // Rook moves in 4 directions: up, down, left, right
-            // Direction vectors: (row_delta, col_delta)
+            // Queen moves like both Rook and Bishop
+            // 8 directions: 4 straight (like Rook) + 4 diagonal (like Bishop)
             int[,] directions = {
-                {-1, 0},  // Up
-                {1, 0},   // Down
-                {0, -1},  // Left
-                {0, 1}    // Right
+                {-1, 0},   // Up (Rook)
+                {1, 0},    // Down (Rook)
+                {0, -1},   // Left (Rook)
+                {0, 1},    // Right (Rook)
+                {-1, -1},  // Up-Left (Bishop)
+                {-1, 1},   // Up-Right (Bishop)
+                {1, -1},   // Down-Left (Bishop)
+                {1, 1}     // Down-Right (Bishop)
             };
 
-            for (int dir = 0; dir < 4; dir++)
+            for (int dir = 0; dir < 8; dir++)
             {
                 int rowDelta = directions[dir, 0];
                 int colDelta = directions[dir, 1];

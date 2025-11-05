@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ShatranjCore.Board;
+using ShatranjCore.Interfaces;
 
-namespace ShatranjCore
+namespace ShatranjCore.Pieces
 {
-    public class Queen : Piece
+    public class Bishop : Piece
     {
-        public Queen(int i, int j, PieceColor p1color) : base(i,j,p1color)
+        public Bishop(int i, int j, PieceColor pc) : base(i,j,pc)
         {
         }
 
@@ -24,6 +26,14 @@ namespace ShatranjCore
             throw new NotImplementedException();
         }
 
+        internal override bool CanMove(Location source, Location destination, IChessBoard board)
+        {
+            List<Move> validMoves = GetMoves(source, board);
+            return validMoves.Any(m =>
+                m.To.Location.Row == destination.Row &&
+                m.To.Location.Column == destination.Column);
+        }
+
         internal override List<Move> GetMoves(Location source, IChessBoard board)
         {
             List<Move> possibleMoves = new List<Move>();
@@ -33,20 +43,16 @@ namespace ShatranjCore
             if (pieceAtSource == null || pieceAtSource.GetType() != this.GetType())
                 return possibleMoves;
 
-            // Queen moves like both Rook and Bishop
-            // 8 directions: 4 straight (like Rook) + 4 diagonal (like Bishop)
+            // Bishop moves diagonally in 4 directions
+            // Direction vectors: (row_delta, col_delta)
             int[,] directions = {
-                {-1, 0},   // Up (Rook)
-                {1, 0},    // Down (Rook)
-                {0, -1},   // Left (Rook)
-                {0, 1},    // Right (Rook)
-                {-1, -1},  // Up-Left (Bishop)
-                {-1, 1},   // Up-Right (Bishop)
-                {1, -1},   // Down-Left (Bishop)
-                {1, 1}     // Down-Right (Bishop)
+                {-1, -1},  // Up-Left
+                {-1, 1},   // Up-Right
+                {1, -1},   // Down-Left
+                {1, 1}     // Down-Right
             };
 
-            for (int dir = 0; dir < 8; dir++)
+            for (int dir = 0; dir < 4; dir++)
             {
                 int rowDelta = directions[dir, 0];
                 int colDelta = directions[dir, 1];
@@ -94,14 +100,6 @@ namespace ShatranjCore
             }
 
             return possibleMoves;
-        }
-
-        internal override bool CanMove(Location source, Location destination, IChessBoard board)
-        {
-            List<Move> validMoves = GetMoves(source, board);
-            return validMoves.Any(m =>
-                m.To.Location.Row == destination.Row &&
-                m.To.Location.Column == destination.Column);
         }
 
         internal override bool IsBlockingCheck(Location source, IChessBoard board)
