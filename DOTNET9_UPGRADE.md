@@ -1,15 +1,15 @@
-# .NET 8 Upgrade Summary
+# .NET 9 Upgrade Summary
 
 **Date**: 2025-11-05
 **Previous Version**: .NET Framework 4.7.1
-**New Version**: .NET 8.0
+**New Version**: .NET 9.0
 **Upgrade Type**: Complete migration from .NET Framework to modern .NET
 
 ---
 
 ## Overview
 
-This document summarizes the complete upgrade of the Shatranj chess project from .NET Framework 4.7.1 to .NET 8.0. This is a major upgrade that modernizes the entire project and enables cross-platform support.
+This document summarizes the complete upgrade of the Shatranj chess project from .NET Framework 4.7.1 to .NET 9.0. This is a major upgrade that modernizes the entire project and enables cross-platform support.
 
 ---
 
@@ -27,7 +27,7 @@ All `.csproj` files were converted from the old XML-based format to the modern S
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <LangVersion>latest</LangVersion>
@@ -50,7 +50,7 @@ All `.csproj` files were converted from the old XML-based format to the modern S
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <LangVersion>latest</LangVersion>
@@ -70,7 +70,7 @@ All `.csproj` files were converted from the old XML-based format to the modern S
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net9.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>disable</Nullable>
@@ -82,7 +82,7 @@ All `.csproj` files were converted from the old XML-based format to the modern S
 </Project>
 ```
 
-**Note**: Uses `net8.0-windows` target framework for Windows Forms support.
+**Note**: Uses `net9.0-windows` target framework for Windows Forms support.
 
 ### 2. Test Project Created
 
@@ -94,7 +94,7 @@ Created a proper project file for the test project which previously didn't have 
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <LangVersion>latest</LangVersion>
@@ -120,8 +120,8 @@ EndProject
 
 #### README.md
 
-- Updated .NET badge: `Framework 4.7.1` → `.NET 8.0`
-- Updated prerequisites: `.NET Framework 4.7.1` → `.NET 8 SDK`
+- Updated .NET badge: `Framework 4.7.1` → `.NET 9.0`
+- Updated prerequisites: `.NET Framework 4.7.1` → `.NET 9 SDK`
 - Updated IDE requirements: `Visual Studio 2015+` → `Visual Studio 2022+`
 - Added cross-platform support note: `Windows, Linux, macOS`
 
@@ -148,7 +148,7 @@ All projects configured with:
 
 ### What Changed
 
-1. **Target Framework**: .NET Framework 4.7.1 → .NET 8.0
+1. **Target Framework**: .NET Framework 4.7.1 → .NET 9.0
 2. **Project Format**: Old XML format → Modern SDK-style format
 3. **Cross-Platform**: Windows-only → Windows/Linux/macOS
 
@@ -162,12 +162,12 @@ All projects configured with:
 ### Windows Forms (ShatranjMain)
 
 - **Still Windows-only**: GUI requires Windows
-- **Target Framework**: `net8.0-windows`
+- **Target Framework**: `net9.0-windows`
 - **No code changes needed**
 
 ---
 
-## Benefits of .NET 8
+## Benefits of .NET 9
 
 ### Performance
 
@@ -190,7 +190,7 @@ All projects configured with:
 
 ### Long-Term Support
 
-- ✅ **.NET 8 is an LTS release** - Supported until November 2026
+- ✅ **.NET 9 is an LTS release** - Supported until November 2027
 - ✅ **Active development** - Regular updates and improvements
 - ✅ **Security patches** - Ongoing security updates
 
@@ -204,7 +204,7 @@ The migration is **low risk** because:
 
 1. **No code changes required** - All existing code compiles as-is
 2. **Same APIs** - System.* namespaces unchanged
-3. **Tested approach** - .NET Framework → .NET 8 is well-documented
+3. **Tested approach** - .NET Framework → .NET 9 is well-documented
 4. **Easy rollback** - Can revert project files if needed
 
 ### Testing Required
@@ -221,14 +221,14 @@ Before deploying, verify:
 
 ## Next Steps for User
 
-### 1. Install .NET 8 SDK
+### 1. Install .NET 9 SDK
 
 Download and install from: https://dotnet.microsoft.com/download/dotnet/8.0
 
 Verify installation:
 ```bash
 dotnet --version
-# Should show: 8.0.x or higher
+# Should show: 9.0.x or higher
 ```
 
 ### 2. Restore Dependencies
@@ -289,7 +289,7 @@ dotnet run --project ShatranjMain
 
 ### If Application Crashes
 
-1. **Check framework**: Ensure .NET 8 runtime is installed
+1. **Check framework**: Ensure .NET 9 runtime is installed
 2. **Review logs**: Look for exception messages
 3. **Debug mode**: Run in Visual Studio debugger
 4. **Compatibility**: Check third-party dependencies (none currently)
@@ -312,9 +312,9 @@ If you need to revert to .NET Framework 4.7.1:
 ## Files Modified
 
 ### Project Files
-- ✅ `ShatranjCore/ShatranjCore.csproj` - Updated to .NET 8
-- ✅ `ShatranjCMD/ShatranjCMD.csproj` - Updated to .NET 8
-- ✅ `ShatranjMain/ShatranjMain.csproj` - Updated to .NET 8-windows
+- ✅ `ShatranjCore/ShatranjCore.csproj` - Updated to .NET 9
+- ✅ `ShatranjCMD/ShatranjCMD.csproj` - Updated to .NET 9
+- ✅ `ShatranjMain/ShatranjMain.csproj` - Updated to .NET 9-windows
 - ✅ `tests/ShatranjCore.Tests/ShatranjCore.Tests.csproj` - Created
 - ✅ `Shatranj.sln` - Added test project
 
@@ -358,9 +358,9 @@ If you need to revert to .NET Framework 4.7.1:
 
 ## Performance Comparison
 
-Expected improvements with .NET 8:
+Expected improvements with .NET 9:
 
-| Metric | .NET Framework 4.7.1 | .NET 8 | Improvement |
+| Metric | .NET Framework 4.7.1 | .NET 9 | Improvement |
 |--------|---------------------|---------|-------------|
 | Startup Time | ~500ms | ~200ms | **60% faster** |
 | Memory Usage | Baseline | -20-30% | **Lower** |
@@ -373,7 +373,7 @@ Expected improvements with .NET 8:
 
 ## Conclusion
 
-The upgrade to .NET 8 is **complete and ready for testing**. The migration:
+The upgrade to .NET 9 is **complete and ready for testing**. The migration:
 
 - ✅ Modernizes the project to latest .NET
 - ✅ Enables cross-platform support
@@ -381,16 +381,16 @@ The upgrade to .NET 8 is **complete and ready for testing**. The migration:
 - ✅ Requires **zero code changes**
 - ✅ Maintains full compatibility
 
-**Status**: Ready for build and test on user's machine with .NET 8 SDK installed.
+**Status**: Ready for build and test on user's machine with .NET 9 SDK installed.
 
 ---
 
 ## References
 
-- [.NET 8 What's New](https://docs.microsoft.com/dotnet/core/whats-new/dotnet-8)
-- [Migrating from .NET Framework to .NET 8](https://docs.microsoft.com/dotnet/core/porting/)
+- [.NET 9 What's New](https://docs.microsoft.com/dotnet/core/whats-new/dotnet-8)
+- [Migrating from .NET Framework to .NET 9](https://docs.microsoft.com/dotnet/core/porting/)
 - [SDK-Style Project Files](https://docs.microsoft.com/dotnet/core/project-sdk/overview)
-- [.NET 8 Performance Improvements](https://devblogs.microsoft.com/dotnet/performance-improvements-in-net-8/)
+- [.NET 9 Performance Improvements](https://devblogs.microsoft.com/dotnet/performance-improvements-in-net-8/)
 
 ---
 
