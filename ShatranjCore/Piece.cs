@@ -70,8 +70,8 @@ namespace ShatranjCore
 
         abstract public Square[] ValidMoves();
         abstract public bool IsCaptured();
-        internal abstract List<Move> GetMoves(Location source, ChessBoard board);
-        internal abstract bool IsBlockingCheck(Location source, ChessBoard board);
-        internal abstract bool CanMove(Location source, Location destination, ChessBoard board);
+        internal abstract List<Move> GetMoves(Location source, IChessBoard board);
+        internal abstract bool IsBlockingCheck(Location source, IChessBoard board);
+        internal abstract bool CanMove(Location source, Location destination, IChessBoard board);
     }
 }

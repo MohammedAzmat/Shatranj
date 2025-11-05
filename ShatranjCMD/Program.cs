@@ -11,15 +11,30 @@ namespace ShatranjCMD
     {
         static void Main(string[] args)
         {
-            //ShatranjCore.Utilities ut = new Utilities();
-            //ut.PrintEmptyBoard();
-            Console.WriteLine("Initializing new Program....\nCreating a New Game Env");
-            PlayerType[] players = new PlayerType[2];
-            players[0] = PlayerType.Human;
-            players[1] = PlayerType.Human;
+            // Set console to use UTF-8 encoding for better box-drawing characters
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
 
-            ChessGame game = new ChessGame(players, PieceColor.White);
-            
+            // Welcome message
+            Console.Clear();
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("╔════════════════════════════════════════════════════════════════╗");
+            Console.WriteLine("║                        SHATRANJ CHESS                          ║");
+            Console.WriteLine("║                    Persian Chess Game                          ║");
+            Console.WriteLine("╚════════════════════════════════════════════════════════════════╝");
+            Console.ResetColor();
+            Console.WriteLine();
+            Console.WriteLine("Welcome to Shatranj - A chess game built with SOLID principles!");
+            Console.WriteLine();
+            Console.WriteLine("Press any key to start a new game...");
+            Console.ReadKey();
+
+            // Start the enhanced chess game
+            EnhancedChessGame game = new EnhancedChessGame();
+            game.Start();
+
+            Console.WriteLine();
+            Console.WriteLine("Thank you for playing Shatranj!");
+            Console.WriteLine("Press any key to exit...");
             Console.ReadKey();
         }
     }
