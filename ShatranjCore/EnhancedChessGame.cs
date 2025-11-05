@@ -16,6 +16,7 @@ namespace ShatranjCore
         private readonly MoveHistory moveHistory;
         private readonly CastlingValidator castlingValidator;
         private readonly PawnPromotionHandler promotionHandler;
+        private readonly CheckDetector checkDetector;
         private readonly List<Piece> capturedPieces;
 
         private Player[] players;
@@ -31,6 +32,7 @@ namespace ShatranjCore
             moveHistory = new MoveHistory();
             castlingValidator = new CastlingValidator();
             promotionHandler = new PawnPromotionHandler();
+            checkDetector = new CheckDetector();
             capturedPieces = new List<Piece>();
             gameResult = GameResult.InProgress;
         }
@@ -70,6 +72,28 @@ namespace ShatranjCore
         {
             while (isRunning)
             {
+                // Check for checkmate or stalemate
+                if (checkDetector.IsCheckmate(board, currentPlayer))
+                {
+                    PieceColor winner = currentPlayer == PieceColor.White ? PieceColor.Black : PieceColor.White;
+                    renderer.RenderBoard(board, null, null);
+                    renderer.DisplayGameOver(GameResult.Checkmate, winner);
+                    gameResult = GameResult.Checkmate;
+                    isRunning = false;
+                    WaitForKey();
+                    break;
+                }
+
+                if (checkDetector.IsStalemate(board, currentPlayer))
+                {
+                    renderer.RenderBoard(board, null, null);
+                    renderer.DisplayGameOver(GameResult.Stalemate);
+                    gameResult = GameResult.Stalemate;
+                    isRunning = false;
+                    WaitForKey();
+                    break;
+                }
+
                 // Render the board
                 var lastMove = moveHistory.GetLastMove();
                 Location? lastFrom = lastMove != null ? (Location?)lastMove.Move.From.Location : null;
@@ -78,10 +102,11 @@ namespace ShatranjCore
                 renderer.RenderBoard(board, lastFrom, lastTo);
 
                 // Display game status
+                bool isCheck = checkDetector.IsKingInCheck(board, currentPlayer);
                 var status = new GameStatus
                 {
                     CurrentPlayer = currentPlayer,
-                    IsCheck = false, // TODO: Implement check detection
+                    IsCheck = isCheck,
                     LastMove = lastMove?.AlgebraicNotation,
                     CapturedPieces = capturedPieces
                 };
@@ -183,10 +208,18 @@ namespace ShatranjCore
                     return;
                 }
 
-                // Check if move is valid
+                // Check if move is valid for this piece type
                 if (!piece.CanMove(command.From, command.To, board))
                 {
                     renderer.DisplayError($"Illegal move for {piece.GetType().Name}");
+                    WaitForKey();
+                    return;
+                }
+
+                // Check if move would leave king in check
+                if (checkDetector.WouldMoveCauseCheck(board, command.From, command.To, currentPlayer))
+                {
+                    renderer.DisplayError("That move would leave your King in check!");
                     WaitForKey();
                     return;
                 }
@@ -256,6 +289,11 @@ namespace ShatranjCore
                 piece = promotedPiece; // Update piece reference for move history
             }
 
+            // Check if opponent is now in check/checkmate
+            PieceColor opponent = currentPlayer == PieceColor.White ? PieceColor.Black : PieceColor.White;
+            bool causedCheck = checkDetector.IsKingInCheck(board, opponent);
+            bool causedCheckmate = causedCheck && checkDetector.IsCheckmate(board, opponent);
+
             // Record the move
             Move move = new Move(
                 piece,
@@ -264,9 +302,7 @@ namespace ShatranjCore
                 capturedPiece
             );
 
-            moveHistory.AddMove(move, currentPlayer, wasCapture);
-
-            // TODO: Check for checkmate, stalemate, etc.
+            moveHistory.AddMove(move, currentPlayer, wasCapture, causedCheck, causedCheckmate);
         }
 
         /// <summary>
@@ -419,8 +455,9 @@ namespace ShatranjCore
                 return;
             }
 
-            List<Move> moves = piece.GetMoves(command.From, board);
-            renderer.DisplayPossibleMoves(command.From, moves);
+            // Get only legal moves (those that don't leave king in check)
+            List<Move> legalMoves = checkDetector.GetLegalMoves(board, command.From, currentPlayer);
+            renderer.DisplayPossibleMoves(command.From, legalMoves);
             WaitForKey();
         }
 

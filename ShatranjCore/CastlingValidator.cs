@@ -8,6 +8,13 @@ namespace ShatranjCore
     /// </summary>
     public class CastlingValidator
     {
+        private readonly CheckDetector checkDetector;
+
+        public CastlingValidator()
+        {
+            checkDetector = new CheckDetector();
+        }
+
         /// <summary>
         /// Checks if kingside castling is possible for the given color.
         /// </summary>
@@ -33,8 +40,19 @@ namespace ShatranjCore
             if (!board.IsEmptyAt(kingRow, 5) || !board.IsEmptyAt(kingRow, 6))
                 return false;
 
-            // TODO: King cannot be in check, pass through check, or end in check
-            // This requires check detection implementation
+            // King cannot be in check currently
+            if (checkDetector.IsKingInCheck(board, color))
+                return false;
+
+            // King cannot pass through check (square f1/f8)
+            Location passThroughSquare = new Location(kingRow, 5);
+            if (checkDetector.IsSquareUnderAttack(board, passThroughSquare, color))
+                return false;
+
+            // King cannot end in check (square g1/g8)
+            Location endSquare = new Location(kingRow, 6);
+            if (checkDetector.IsSquareUnderAttack(board, endSquare, color))
+                return false;
 
             return true;
         }
@@ -64,8 +82,19 @@ namespace ShatranjCore
             if (!board.IsEmptyAt(kingRow, 1) || !board.IsEmptyAt(kingRow, 2) || !board.IsEmptyAt(kingRow, 3))
                 return false;
 
-            // TODO: King cannot be in check, pass through check, or end in check
-            // This requires check detection implementation
+            // King cannot be in check currently
+            if (checkDetector.IsKingInCheck(board, color))
+                return false;
+
+            // King cannot pass through check (square d1/d8)
+            Location passThroughSquare = new Location(kingRow, 3);
+            if (checkDetector.IsSquareUnderAttack(board, passThroughSquare, color))
+                return false;
+
+            // King cannot end in check (square c1/c8)
+            Location endSquare = new Location(kingRow, 2);
+            if (checkDetector.IsSquareUnderAttack(board, endSquare, color))
+                return false;
 
             return true;
         }
