@@ -83,12 +83,13 @@ Build a fully-featured chess game from the ground up, following SOLID principles
 
 ---
 
-## Phase 3: AI with Difficulty Levels
+## Phase 3: AI with Difficulty Levels & Self-Learning
 
 ### Objectives
 - Multiple AI difficulty settings (Easy, Medium, Hard, Expert)
 - Advanced chess algorithms for challenging gameplay
 - Performance optimization for deeper search
+- **AI vs AI mode for adversarial learning and self-improvement**
 
 ### Key Features
 - [ ] Difficulty level selection
@@ -104,18 +105,34 @@ Build a fully-featured chess game from the ground up, following SOLID principles
   - [ ] Mobility and development scoring
 - [ ] Opening book integration (optional)
 - [ ] Endgame tablebases (optional)
+- [ ] **AI vs AI Mode**:
+  - [ ] Automated game simulation (AI vs AI)
+  - [ ] Game data collection and logging
+  - [ ] Performance metrics tracking (win rate, average game length, etc.)
+  - [ ] Batch simulation mode (run N games automatically)
+  - [ ] Position evaluation comparison between AI versions
+  - [ ] Learning from self-play (store successful strategies)
+  - [ ] Adversarial training framework for AI improvement
 
 ### Technical Requirements
 - `AIEngine` with configurable depth and evaluation
 - `TranspositionTable` for position caching
 - `OpeningBook` for early game moves
 - Performance profiling and optimization
+- **AI Training Infrastructure**:
+  - `GameSimulator` for automated AI vs AI matches
+  - `GameDataLogger` for recording game outcomes and positions
+  - `PerformanceAnalyzer` for evaluating AI strength
+  - `LearningEngine` for extracting patterns from self-play games
+  - Data storage for training games (SQLite/JSON)
 
 ### Success Criteria
 ✓ Easy mode beatable by beginners
 ✓ Hard mode challenging for intermediate players
 ✓ AI moves calculated in reasonable time (<5 seconds)
 ✓ No illegal moves or crashes under any difficulty
+✓ AI vs AI mode can simulate 100+ games unattended
+✓ Measurable improvement in AI performance through self-play
 
 ---
 

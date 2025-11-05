@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ShatranjCore
 {
-    public class ChessBoard
+    public class ChessBoard : IChessBoard
     {
         #region Class members
         private Square[,] squares;
@@ -238,6 +238,91 @@ namespace ShatranjCore
         }
 
         public List<Piece> GetOppPieces(PieceColor color) { return new List<Piece>(); }
+
+        #endregion
+
+        #region IChessBoard Implementation
+
+        /// <summary>
+        /// Gets all pieces of the specified color currently on the board.
+        /// </summary>
+        public List<Piece> GetPiecesOfColor(PieceColor color)
+        {
+            int index = (color == PieceColor.Black) ? 0 : 1;
+            return boardSet[index].Pieces.Where(p => p != null && !p.IsCaptured()).ToList();
+        }
+
+        /// <summary>
+        /// Gets all opponent pieces for the given color.
+        /// </summary>
+        public List<Piece> GetOpponentPieces(PieceColor color)
+        {
+            PieceColor opponentColor = (color == PieceColor.Black) ? PieceColor.White : PieceColor.Black;
+            return GetPiecesOfColor(opponentColor);
+        }
+
+        /// <summary>
+        /// Places a piece at the specified location.
+        /// </summary>
+        public void PlacePiece(Piece piece, Location location)
+        {
+            if (!IsInBounds(location))
+                throw new ArgumentOutOfRangeException(nameof(location), "Location is out of bounds");
+
+            squares[location.Row, location.Column].Piece = piece;
+            if (piece != null)
+            {
+                piece.location = location;
+            }
+        }
+
+        /// <summary>
+        /// Removes the piece at the specified location.
+        /// </summary>
+        public Piece RemovePiece(Location location)
+        {
+            if (!IsInBounds(location))
+                throw new ArgumentOutOfRangeException(nameof(location), "Location is out of bounds");
+
+            Piece piece = squares[location.Row, location.Column].Piece;
+            squares[location.Row, location.Column].Piece = null;
+            return piece;
+        }
+
+        /// <summary>
+        /// Finds the King of the specified color.
+        /// </summary>
+        public King FindKing(PieceColor color)
+        {
+            for (int row = 0; row < 8; row++)
+            {
+                for (int col = 0; col < 8; col++)
+                {
+                    Piece piece = squares[row, col].Piece;
+                    if (piece is King king && king.Color == color)
+                    {
+                        return king;
+                    }
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Checks if a location is within board boundaries (0-7).
+        /// </summary>
+        public bool IsInBounds(int row, int column)
+        {
+            return row >= 0 && row < 8 && column >= 0 && column < 8;
+        }
+
+        /// <summary>
+        /// Checks if a location is within board boundaries.
+        /// </summary>
+        public bool IsInBounds(Location location)
+        {
+            return IsInBounds(location.Row, location.Column);
+        }
 
         #endregion
     }

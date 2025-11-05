@@ -33,7 +33,7 @@ namespace ShatranjCore
             return ((location.Row == 0 && direction == PawnMoves.Up) || (location.Row == 7 && direction == PawnMoves.Down)) ? true : false;
         }
 
-        internal override List<Move> GetMoves(Location source, ChessBoard board)
+        internal override List<Move> GetMoves(Location source, IChessBoard board)
         {
             //throw new NotImplementedException();
             //Check again if this piece is at source
@@ -73,8 +73,18 @@ namespace ShatranjCore
             return (direction == PawnMoves.Up) ? 1 : -1;
         }
 
-        internal override bool IsBlockingCheck(Location source, ChessBoard board)
+        internal override bool CanMove(Location source, Location destination, IChessBoard board)
         {
+            List<Move> validMoves = GetMoves(source, board);
+            return validMoves.Any(m =>
+                m.To.Location.Row == destination.Row &&
+                m.To.Location.Column == destination.Column);
+        }
+
+        internal override bool IsBlockingCheck(Location source, IChessBoard board)
+        {
+            // TODO: Implement check blocking logic in Phase 1
+            // A piece blocks check if removing it would put its own King in check
             throw new NotImplementedException();
         }
     }
