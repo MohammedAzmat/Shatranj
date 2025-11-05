@@ -1,7 +1,7 @@
 # Shatranj - Persian Chess Game
 
 [![Phase](https://img.shields.io/badge/Phase-1%20(100%25%20Complete)-brightgreen)]()
-[![.NET](https://img.shields.io/badge/.NET-Framework%204.7.1-blue)]()
+[![.NET](https://img.shields.io/badge/.NET-8.0-blue)]()
 [![License](https://img.shields.io/badge/License-MIT-green)]()
 [![Tests](https://img.shields.io/badge/Tests-40%20Passing-brightgreen)]()
 
@@ -58,9 +58,9 @@ Build a complete chess game through iterative phases:
 
 ### Prerequisites
 
-- **.NET Framework 4.7.1** or higher
-- **Visual Studio 2015+** or **.NET CLI**
-- **Windows** (Linux/Mac with Mono)
+- **.NET 8 SDK** or higher
+- **Visual Studio 2022+**, **Visual Studio Code**, or **.NET CLI**
+- **Windows**, **Linux**, or **macOS** (cross-platform support)
 
 ### Installation
 
