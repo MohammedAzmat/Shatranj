@@ -21,9 +21,7 @@ namespace ShatranjCore.Pieces
 
         public Piece(int row, int column, PieceColor pieceColor)
         {
-            
-            location.Row = row;
-            location.Column = column;
+            location = new Location(row, column);
             color = pieceColor;
             isMoved = false;
             notation = color.ToString().Substring(0, 1).ToLower() + ((this.GetType().Name == "Knight")?this.GetType().Name.Substring(1,1).ToUpper():this.GetType().Name.Substring(0, 1));
