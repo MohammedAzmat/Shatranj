@@ -1,4 +1,5 @@
 using System;
+using ShatranjCore.Abstractions;
 
 namespace ShatranjCore.Validators
 {
