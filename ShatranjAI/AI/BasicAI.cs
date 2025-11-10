@@ -37,8 +37,11 @@ namespace ShatranjAI.AI
         /// <summary>
         /// Selects the best move using minimax with alpha-beta pruning
         /// </summary>
-        public AIMove SelectMove(IChessBoard board, PieceColor color, Location? enPassantTarget)
+        public AIMove SelectMove(IBoardState boardState, PieceColor color, Location? enPassantTarget)
         {
+            // Cast to IChessBoard for internal use (IChessBoard extends IBoardState)
+            IChessBoard board = (IChessBoard)boardState;
+
             logger?.Info($"{Name} thinking (Depth: {Depth})...");
             Stopwatch sw = Stopwatch.StartNew();
             nodesEvaluated = 0;
@@ -254,8 +257,10 @@ namespace ShatranjAI.AI
         /// <summary>
         /// Evaluates the current position
         /// </summary>
-        public double EvaluatePosition(IChessBoard board, PieceColor color)
+        public double EvaluatePosition(IBoardState boardState, PieceColor color)
         {
+            // Cast to IChessBoard for internal use (IChessBoard extends IBoardState)
+            IChessBoard board = (IChessBoard)boardState;
             return evaluator.Evaluate(board, color);
         }
 

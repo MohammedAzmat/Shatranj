@@ -13,12 +13,10 @@ namespace ShatranjCore.Pieces
     public class Pawn : Piece
     {
         private PawnMoves direction;
-        private bool startpos;
         public PawnMoves Direction {get{ return direction; } }
         public Pawn(int row, int column, PieceColor pieceColor, PawnMoves _direction) : base(row, column, pieceColor)
         {
             direction = _direction;
-            startpos = true;
         }
 
 

@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ShatranjCore.Movement;
 
 namespace ShatranjCore.Game
 {
@@ -12,7 +11,6 @@ namespace ShatranjCore.Game
     public class Player
     {
         private PieceColor playerColor;
-        private MoveMaker playerMove;
         private PlayerType playerType;
         private bool playerTurn;
 
