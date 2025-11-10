@@ -84,4 +84,30 @@ namespace ShatranjCore.Abstractions
         HumanVsAI,
         AIVsAI
     }
+
+    /// <summary>
+    /// Enum representing AI difficulty levels
+    /// </summary>
+    public enum DifficultyLevel
+    {
+        Easy = 2,       // Depth 2
+        Medium = 3,     // Depth 3
+        Hard = 4,       // Depth 4
+        VeryHard = 5,   // Depth 5
+        Titan = 6       // Depth 6
+    }
+
+    /// <summary>
+    /// Enum representing game result
+    /// </summary>
+    public enum GameResult
+    {
+        InProgress,
+        WhiteWins,
+        BlackWins,
+        Checkmate,
+        Stalemate,
+        Draw,
+        Resignation
+    }
 }

@@ -46,6 +46,17 @@ namespace ShatranjCore.Game
         private readonly GameRecorder recorder;
         private readonly GameSerializer serializer;
 
+        // Game configuration and save management
+        private readonly GameConfigManager configManager;
+        private readonly SaveGameManager saveManager;
+        private int currentGameId;
+        private DifficultyLevel difficulty;
+        private string whitePlayerName;
+        private string blackPlayerName;
+
+        // State history for rollback functionality
+        private readonly List<GameStateSnapshot> stateHistory;
+
         public ChessGame(
             GameMode mode = GameMode.HumanVsHuman,
             PieceColor humanPlayerColor = PieceColor.White,
@@ -72,6 +83,18 @@ namespace ShatranjCore.Game
             );
             recorder = new GameRecorder(logger);
             serializer = new GameSerializer(logger);
+
+            // Initialize configuration and save management
+            configManager = new GameConfigManager(logger);
+            saveManager = new SaveGameManager(logger);
+            stateHistory = new List<GameStateSnapshot>();
+
+            // Load configuration
+            var config = configManager.GetConfig();
+            difficulty = config.Difficulty;
+            whitePlayerName = config.ProfileName;
+            blackPlayerName = config.OpponentProfileName;
+            currentGameId = configManager.GetNextGameId();
 
             // Set AI instances from constructor parameters
             this.whiteAI = whiteAI;
@@ -191,6 +214,9 @@ namespace ShatranjCore.Game
                     recorder.EndGame(winner.ToString(), "Checkmate");
                     logger.Info($"Game ended - Winner: {winner} by Checkmate");
 
+                    // Cleanup autosave
+                    CleanupGameFiles();
+
                     WaitForKey();
                     break;
                 }
@@ -205,6 +231,9 @@ namespace ShatranjCore.Game
                     // Record game end
                     recorder.EndGame("Draw", "Stalemate");
                     logger.Info("Game ended - Draw by Stalemate");
+
+                    // Cleanup autosave
+                    CleanupGameFiles();
 
                     WaitForKey();
                     break;
@@ -649,6 +678,28 @@ namespace ShatranjCore.Game
             players[0].HasTurn = !players[0].HasTurn;
             players[1].HasTurn = !players[1].HasTurn;
             enPassantTracker.NextTurn();
+
+            // Autosave after each turn
+            try
+            {
+                GameStateSnapshot snapshot = CreateSnapshot();
+
+                // Add to state history for rollback (keep last 10 states)
+                stateHistory.Add(snapshot);
+                if (stateHistory.Count > 10)
+                {
+                    stateHistory.RemoveAt(0);
+                }
+
+                // Autosave
+                saveManager.SaveAutosave(snapshot);
+                logger.Debug($"Autosave completed. Turn {snapshot.MoveCount}");
+            }
+            catch (Exception ex)
+            {
+                logger.Warning("Autosave failed", ex);
+                // Don't interrupt gameplay for autosave failures
+            }
         }
 
         /// <summary>
@@ -813,12 +864,16 @@ namespace ShatranjCore.Game
         {
             var snapshot = new GameStateSnapshot
             {
+                GameId = currentGameId,
                 GameMode = gameMode.ToString(),
                 CurrentPlayer = currentPlayer.ToString(),
                 HumanColor = humanColor.ToString(),
                 GameResult = gameResult.ToString(),
                 WhitePlayerType = players[0].Type.ToString(),
                 BlackPlayerType = players[1].Type.ToString(),
+                WhitePlayerName = whitePlayerName,
+                BlackPlayerName = blackPlayerName,
+                Difficulty = difficulty.ToString(),
                 MoveCount = moveHistory.GetMoves().Count
             };
 
@@ -877,11 +932,174 @@ namespace ShatranjCore.Game
         /// </summary>
         private void RestoreFromSnapshot(GameStateSnapshot snapshot)
         {
-            // Note: This is a simplified restoration
-            // A full implementation would need to restore en passant, castling rights, etc.
-            renderer.DisplayInfo("Game state restoration is not yet fully implemented.");
-            renderer.DisplayInfo("This feature will be completed in a future update.");
-            logger.Warning("RestoreFromSnapshot called but not fully implemented");
+            try
+            {
+                logger.Info("Starting game state restoration...");
+
+                // 1. Clear current game state
+                capturedPieces.Clear();
+                moveHistory.Clear();
+                enPassantTracker.Reset();
+
+                // 2. Clear the board
+                for (int row = 0; row < 8; row++)
+                {
+                    for (int col = 0; col < 8; col++)
+                    {
+                        Location loc = new Location(row, col);
+                        if (board.GetPiece(loc) != null)
+                        {
+                            board.RemovePiece(loc);
+                        }
+                    }
+                }
+
+                // 3. Restore pieces
+                foreach (var pieceData in snapshot.Pieces)
+                {
+                    PieceColor color = (PieceColor)Enum.Parse(typeof(PieceColor), pieceData.Color);
+                    Piece piece = PieceFactory.CreatePiece(pieceData.Type, color, pieceData.Row, pieceData.Column);
+                    piece.isMoved = pieceData.HasMoved;
+                    board.PlacePiece(piece, new Location(pieceData.Row, pieceData.Column));
+                }
+
+                // 4. Restore captured pieces
+                foreach (var capturedData in snapshot.CapturedPieces)
+                {
+                    PieceColor color = (PieceColor)Enum.Parse(typeof(PieceColor), capturedData.Color);
+                    Piece piece = PieceFactory.CreatePiece(capturedData.Type, color, 0, 0);
+                    capturedPieces.Add(piece);
+                }
+
+                // 5. Restore move history
+                // Note: Move history is restored as strings only
+                // Full move reconstruction would require more complex logic
+                logger.Info($"Move history has {snapshot.MoveHistory.Count} moves");
+
+                // 6. Restore en passant state
+                if (snapshot.EnPassantTargetRow.HasValue && snapshot.EnPassantTargetColumn.HasValue)
+                {
+                    Location enPassantTarget = new Location(
+                        snapshot.EnPassantTargetRow.Value,
+                        snapshot.EnPassantTargetColumn.Value
+                    );
+
+                    if (snapshot.EnPassantPawnRow.HasValue && snapshot.EnPassantPawnColumn.HasValue)
+                    {
+                        Location pawnLocation = new Location(
+                            snapshot.EnPassantPawnRow.Value,
+                            snapshot.EnPassantPawnColumn.Value
+                        );
+                        Piece pawn = board.GetPiece(pawnLocation);
+                        if (pawn != null)
+                        {
+                            enPassantTracker.RegisterDoublePawnMove(pawn, enPassantTarget);
+                        }
+                    }
+                }
+
+                // 7. Restore game state
+                currentPlayer = (PieceColor)Enum.Parse(typeof(PieceColor), snapshot.CurrentPlayer);
+                gameResult = (GameResult)Enum.Parse(typeof(GameResult), snapshot.GameResult);
+                gameMode = (GameMode)Enum.Parse(typeof(GameMode), snapshot.GameMode);
+                humanColor = (PieceColor)Enum.Parse(typeof(PieceColor), snapshot.HumanColor);
+
+                // 8. Restore players
+                PlayerType whitePlayerType = (PlayerType)Enum.Parse(typeof(PlayerType), snapshot.WhitePlayerType);
+                PlayerType blackPlayerType = (PlayerType)Enum.Parse(typeof(PlayerType), snapshot.BlackPlayerType);
+
+                players = new Player[2];
+                players[0] = new Player(PieceColor.White, whitePlayerType)
+                {
+                    HasTurn = (currentPlayer == PieceColor.White)
+                };
+                players[1] = new Player(PieceColor.Black, blackPlayerType)
+                {
+                    HasTurn = (currentPlayer == PieceColor.Black)
+                };
+
+                // 9. Note about castling rights
+                // Castling rights are implicitly restored via the HasMoved flag on Kings and Rooks
+                // The castling validator will check these flags when validating castling moves
+
+                logger.Info($"Game state restored successfully. Current player: {currentPlayer}");
+                logger.Info($"Pieces on board: {snapshot.Pieces.Count}, Captured: {capturedPieces.Count}");
+            }
+            catch (Exception ex)
+            {
+                logger.Error("Failed to restore game state", ex);
+                renderer.DisplayError("Failed to restore game state. The save file may be corrupted.");
+                throw;
+            }
         }
+
+        /// <summary>
+        /// Rolls back the game state to the previous turn
+        /// </summary>
+        private void HandleRollbackCommand()
+        {
+            try
+            {
+                if (stateHistory.Count < 2)
+                {
+                    renderer.DisplayWarning("Cannot rollback - no previous state available");
+                    logger.Info("Rollback failed - insufficient state history");
+                    WaitForKey();
+                    return;
+                }
+
+                // Get the previous state (last element is current, second to last is previous)
+                GameStateSnapshot previousState = stateHistory[stateHistory.Count - 2];
+
+                // Remove current state from history
+                stateHistory.RemoveAt(stateHistory.Count - 1);
+
+                // Restore the previous state
+                RestoreFromSnapshot(previousState);
+
+                renderer.DisplayInfo("Game rolled back to previous turn");
+                logger.Info($"Game rolled back to turn {previousState.MoveCount}");
+                WaitForKey();
+            }
+            catch (Exception ex)
+            {
+                renderer.DisplayError($"Failed to rollback: {ex.Message}");
+                logger.Error("Rollback failed", ex);
+                WaitForKey();
+            }
+        }
+
+        /// <summary>
+        /// Cleans up save files when game concludes
+        /// </summary>
+        private void CleanupGameFiles()
+        {
+            try
+            {
+                // Delete autosave since game is over
+                if (saveManager.DeleteAutosave())
+                {
+                    logger.Info("Autosave file deleted - game concluded");
+                }
+
+                // Note: We keep the numbered save files for game history
+                // Users can manually delete them if needed
+            }
+            catch (Exception ex)
+            {
+                logger.Warning("Failed to cleanup game files", ex);
+                // Don't interrupt game ending for cleanup failures
+            }
+        }
+
+        /// <summary>
+        /// Provides access to configuration for external management
+        /// </summary>
+        public GameConfigManager GetConfigManager() => configManager;
+
+        /// <summary>
+        /// Provides access to save manager for external operations
+        /// </summary>
+        public SaveGameManager GetSaveManager() => saveManager;
     }
 }

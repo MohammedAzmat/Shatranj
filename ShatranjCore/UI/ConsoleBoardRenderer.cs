@@ -332,16 +332,4 @@ namespace ShatranjCore.UI
         public string LastMove { get; set; }
         public List<Piece> CapturedPieces { get; set; } = new List<Piece>();
     }
-
-    /// <summary>
-    /// Enum for game results.
-    /// </summary>
-    public enum GameResult
-    {
-        Checkmate,
-        Stalemate,
-        Draw,
-        Resignation,
-        InProgress
-    }
 }
