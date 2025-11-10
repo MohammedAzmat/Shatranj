@@ -52,6 +52,14 @@ namespace ShatranjCore.Movement
         }
 
         /// <summary>
+        /// Gets all moves in the game (alias for GetAllMoves).
+        /// </summary>
+        public List<MoveRecord> GetMoves()
+        {
+            return GetAllMoves();
+        }
+
+        /// <summary>
         /// Gets the total number of moves.
         /// </summary>
         public int MoveCount => moves.Count;
