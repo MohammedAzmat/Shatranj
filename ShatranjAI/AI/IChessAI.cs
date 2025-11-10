@@ -1,8 +1,8 @@
 using System;
+using ShatranjCore;
 using ShatranjCore.Interfaces;
-using ShatranjCore.Movement;
 
-namespace ShatranjCore.AI
+namespace ShatranjAI.AI
 {
     /// <summary>
     /// Represents the result of AI move selection

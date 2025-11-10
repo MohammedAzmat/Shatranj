@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
+using ShatranjCore;
 using ShatranjCore.Interfaces;
 using ShatranjCore.Pieces;
 
-namespace ShatranjCore.AI
+namespace ShatranjAI.AI
 {
     /// <summary>
     /// Evaluates chess positions for AI decision-making

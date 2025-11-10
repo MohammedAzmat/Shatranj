@@ -2,14 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using ShatranjCore;
 using ShatranjCore.Board;
 using ShatranjCore.Interfaces;
 using ShatranjCore.Logging;
-using ShatranjCore.Movement;
 using ShatranjCore.Pieces;
 using ShatranjCore.Validators;
 
-namespace ShatranjCore.AI
+namespace ShatranjAI.AI
 {
     /// <summary>
     /// Basic AI implementation using minimax algorithm with alpha-beta pruning

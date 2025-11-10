@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace ShatranjCore.Learning
+namespace ShatranjAI.Learning
 {
     /// <summary>
     /// Represents a single move in a game

@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ShatranjAI\ShatranjAI.csproj" />
+    <ProjectReference Include="..\ShatranjCore\ShatranjCore.csproj" />
   </ItemGroup>
 
 </Project>
