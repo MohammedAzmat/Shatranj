@@ -178,20 +178,21 @@ namespace ShatranjCore.UI
         }
 
         /// <summary>
-        /// Parses a game command: game [action]
+        /// Parses a game command: game [action] [filename]
         /// </summary>
         private GameCommand ParseGameCommand(string[] parts)
         {
-            if (parts.Length != 2)
+            if (parts.Length < 2)
             {
                 return new GameCommand
                 {
                     Type = CommandType.Invalid,
-                    ErrorMessage = "Invalid game command. Usage: game [start|save|end|restart]"
+                    ErrorMessage = "Invalid game command. Usage: game [start|save|load|end|restart] [filename]"
                 };
             }
 
             string action = parts[1].ToLower();
+            string fileName = parts.Length > 2 ? parts[2] : null;
 
             switch (action)
             {
@@ -199,7 +200,10 @@ namespace ShatranjCore.UI
                     return new GameCommand { Type = CommandType.StartGame };
 
                 case "save":
-                    return new GameCommand { Type = CommandType.SaveGame };
+                    return new GameCommand { Type = CommandType.SaveGame, FileName = fileName };
+
+                case "load":
+                    return new GameCommand { Type = CommandType.LoadGame, FileName = fileName };
 
                 case "end":
                     return new GameCommand { Type = CommandType.EndGame };
@@ -211,7 +215,7 @@ namespace ShatranjCore.UI
                     return new GameCommand
                     {
                         Type = CommandType.Invalid,
-                        ErrorMessage = $"Unknown game action: {action}. Valid actions: start, save, end, restart"
+                        ErrorMessage = $"Unknown game action: {action}. Valid actions: start, save, load, end, restart"
                     };
             }
         }
@@ -254,6 +258,7 @@ namespace ShatranjCore.UI
         public CastlingSide? CastleSide { get; set; }
         public Type PromotionPiece { get; set; }
         public string ErrorMessage { get; set; }
+        public string FileName { get; set; }  // For save/load operations
     }
 
     /// <summary>
@@ -269,6 +274,7 @@ namespace ShatranjCore.UI
         ShowHistory,
         StartGame,
         SaveGame,
+        LoadGame,
         EndGame,
         RestartGame,
         Quit
