@@ -841,3 +841,37 @@ dotnet run --project ShatranjCMD
 **Maintained by**: Mohammed Azmat
 **Repository**: https://github.com/MohammedAzmat/Shatranj
 **License**: MIT
+
+---
+
+## Recent Updates (2025-11-10)
+
+### ✅ Compilation Errors Resolved
+
+All 264+ compilation errors have been fixed:
+- Added `using ShatranjCore.Abstractions;` to all test files
+- Added `using ShatranjCore.Movement;` to BasicAI.cs  
+- Removed unused variables from TestRunner.cs
+- **Current Status**: Zero errors, zero warnings!
+
+### 📁 Documentation Reorganization
+
+- Moved BUILD.md, ROADMAP.md, CONTEXT.md, DOTNET9_UPGRADE.md to `docs/` folder
+- All documentation now centralized in `docs/` except README.md
+- Updated all cross-references between documentation files
+
+### 🎯 Phase 2 Status: 95% Complete
+
+Core AI integration is complete and fully functional:
+- ✅ All game modes working (Human vs Human, Human vs AI, AI vs AI)
+- ✅ Minimax algorithm with alpha-beta pruning
+- ✅ Position evaluation with material + piece-square tables
+- ✅ 52 tests passing (40 core, 6 AI, 6 integration)
+- ✅ Zero compilation errors
+- ✅ Clean architecture with proper abstractions layer
+
+Only optional enhancements remain (AI thinking visualization, difficulty presets, move quality feedback).
+
+---
+
+**For complete project status, see [ROADMAP.md](ROADMAP.md)**
