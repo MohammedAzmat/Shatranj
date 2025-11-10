@@ -37,7 +37,7 @@ namespace ShatranjCore.Interfaces
         /// </summary>
         /// <param name="piece">The piece to place</param>
         /// <param name="location">The location to place it</param>
-        new void PlacePiece(Piece piece, Location location);
+        void PlacePiece(Piece piece, Location location);
 
         /// <summary>
         /// Removes the piece at the specified location.
