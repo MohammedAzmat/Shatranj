@@ -824,10 +824,11 @@ namespace ShatranjCore.Game
             try
             {
                 GameStateSnapshot snapshot = CreateSnapshot();
-                string filePath = serializer.SaveGame(snapshot, command.FileName);
+                string filePath = saveManager.SaveGame(snapshot, currentGameId);
                 renderer.DisplayInfo($"Game saved successfully!");
+                renderer.DisplayInfo($"Game ID: {currentGameId}");
                 renderer.DisplayInfo($"Location: {filePath}");
-                logger.Info($"Game saved to {filePath}");
+                logger.Info($"Game {currentGameId} saved to {filePath}");
             }
             catch (Exception ex)
             {
@@ -844,34 +845,53 @@ namespace ShatranjCore.Game
         {
             try
             {
-                string filePath = command.FileName;
+                string gameIdStr = command.FileName;
 
-                // If no filename provided, list saved games
-                if (string.IsNullOrEmpty(filePath))
+                // If no game ID provided, list saved games with metadata
+                if (string.IsNullOrEmpty(gameIdStr))
                 {
-                    string[] savedGames = serializer.ListSavedGames();
-                    if (savedGames.Length == 0)
+                    var savedGames = saveManager.ListSavedGames();
+                    if (savedGames.Count == 0)
                     {
                         renderer.DisplayInfo("No saved games found.");
                         WaitForKey();
                         return;
                     }
 
-                    renderer.DisplayInfo("Saved games:");
-                    for (int i = 0; i < savedGames.Length; i++)
+                    renderer.DisplayInfo("════════════════════════════════════════════════════════════════");
+                    renderer.DisplayInfo("                      SAVED GAMES");
+                    renderer.DisplayInfo("════════════════════════════════════════════════════════════════");
+
+                    foreach (var game in savedGames)
                     {
-                        renderer.DisplayInfo($"  {i + 1}. {System.IO.Path.GetFileName(savedGames[i])}");
+                        renderer.DisplayInfo($"Game #{game.GameId}:");
+                        renderer.DisplayInfo($"  Mode: {game.GameMode}");
+                        renderer.DisplayInfo($"  Players: {game.WhitePlayerName} vs {game.BlackPlayerName}");
+                        renderer.DisplayInfo($"  Turn {game.TurnCount} - {game.CurrentPlayer}'s move");
+                        renderer.DisplayInfo($"  Difficulty: {game.Difficulty}");
+                        renderer.DisplayInfo($"  Saved: {game.SavedAt:yyyy-MM-dd HH:mm:ss}");
+                        renderer.DisplayInfo("");
                     }
-                    renderer.DisplayInfo("Usage: game load <filename>");
+
+                    renderer.DisplayInfo("Usage: game load [gameId]");
+                    renderer.DisplayInfo("Example: game load 1");
                     WaitForKey();
                     return;
                 }
 
-                // Load the game
-                GameStateSnapshot snapshot = serializer.LoadGame(filePath);
+                // Parse game ID
+                if (!int.TryParse(gameIdStr, out int gameId))
+                {
+                    renderer.DisplayError("Invalid game ID. Please enter a number.");
+                    WaitForKey();
+                    return;
+                }
+
+                // Load the game by ID
+                GameStateSnapshot snapshot = saveManager.LoadGame(gameId);
                 RestoreFromSnapshot(snapshot);
-                renderer.DisplayInfo("Game loaded successfully!");
-                logger.Info($"Game loaded from {filePath}");
+                renderer.DisplayInfo($"Game #{gameId} loaded successfully!");
+                logger.Info($"Game {gameId} loaded");
             }
             catch (Exception ex)
             {
