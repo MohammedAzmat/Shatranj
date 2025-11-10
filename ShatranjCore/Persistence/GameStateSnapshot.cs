@@ -33,6 +33,7 @@ namespace ShatranjCore.Persistence
         public string GameResult { get; set; }
         public string WhitePlayerName { get; set; }
         public string BlackPlayerName { get; set; }
+        public string SaveType { get; set; }  // "Manual" or "Auto"
 
         public GameMetadata()
         {
@@ -50,6 +51,7 @@ namespace ShatranjCore.Persistence
         public int GameId { get; set; }
         public DateTime SavedAt { get; set; }
         public string GameMode { get; set; }  // "HumanVsHuman", "HumanVsAI", "AIVsAI"
+        public string SaveType { get; set; }  // "Manual" or "Auto"
 
         // Player information
         public string CurrentPlayer { get; set; }  // "White" or "Black"
@@ -106,7 +108,8 @@ namespace ShatranjCore.Persistence
                 GameMode = this.GameMode,
                 GameResult = this.GameResult,
                 WhitePlayerName = this.WhitePlayerName,
-                BlackPlayerName = this.BlackPlayerName
+                BlackPlayerName = this.BlackPlayerName,
+                SaveType = this.SaveType
             };
         }
     }

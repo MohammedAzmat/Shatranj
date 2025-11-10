@@ -875,8 +875,9 @@ namespace ShatranjCore.Game
                     {
                         // Determine game type label
                         string gameType = game.GameMode == "AIVsAI" ? "Sim" : "Game";
+                        string saveType = string.IsNullOrEmpty(game.SaveType) ? "Manual" : game.SaveType;
 
-                        renderer.DisplayInfo($"{gameType} #{game.GameId}:");
+                        renderer.DisplayInfo($"{gameType} #{game.GameId} ({saveType}):");
                         renderer.DisplayInfo($"  Mode: {game.GameMode}");
                         renderer.DisplayInfo($"  Players: {game.WhitePlayerName} vs {game.BlackPlayerName}");
                         renderer.DisplayInfo($"  Turn {game.TurnCount} - {game.CurrentPlayer}'s move");

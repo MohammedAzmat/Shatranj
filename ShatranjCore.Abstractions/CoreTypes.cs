@@ -110,4 +110,13 @@ namespace ShatranjCore.Abstractions
         Draw,
         Resignation
     }
+
+    /// <summary>
+    /// Enum representing save type
+    /// </summary>
+    public enum SaveType
+    {
+        Manual,     // User-initiated save
+        Auto        // Automatic save after each turn
+    }
 }

@@ -56,6 +56,10 @@ namespace ShatranjCMD
                         StartNewGame(configManager, menuHandler, logger);
                         break;
 
+                    case GameMenuHandler.MainMenuChoice.LoadGame:
+                        LoadSavedGame(saveManager, configManager, logger);
+                        break;
+
                     case GameMenuHandler.MainMenuChoice.Settings:
                         ShowSettingsMenu(configManager);
                         break;
@@ -215,6 +219,150 @@ namespace ShatranjCMD
                 Console.WriteLine("Press any key to return to main menu...");
                 Console.ReadKey();
                 logger.Error("Resume game failed", ex);
+            }
+        }
+
+        static void LoadSavedGame(SaveGameManager saveManager, GameConfigManager configManager, ILogger logger)
+        {
+            try
+            {
+                Console.Clear();
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.WriteLine("╔════════════════════════════════════════════════════════════════╗");
+                Console.WriteLine("║                      LOAD SAVED GAME                           ║");
+                Console.WriteLine("╚════════════════════════════════════════════════════════════════╝");
+                Console.ResetColor();
+                Console.WriteLine();
+
+                // Get list of saved games
+                var savedGames = saveManager.ListSavedGames();
+
+                if (savedGames.Count == 0)
+                {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine("No saved games found.");
+                    Console.ResetColor();
+                    Console.WriteLine();
+                    Console.WriteLine("Press any key to return to main menu...");
+                    Console.ReadKey();
+                    return;
+                }
+
+                // Display saved games
+                Console.WriteLine("Available saved games:");
+                Console.WriteLine();
+
+                foreach (var game in savedGames)
+                {
+                    // Determine game type label
+                    string gameType = game.GameMode == "AIVsAI" ? "Sim" : "Game";
+                    string saveType = string.IsNullOrEmpty(game.SaveType) ? "Manual" : game.SaveType;
+
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+                    Console.WriteLine($"{gameType} #{game.GameId} ({saveType})");
+                    Console.ResetColor();
+                    Console.WriteLine($"  Mode: {game.GameMode}");
+                    Console.WriteLine($"  Players: {game.WhitePlayerName} vs {game.BlackPlayerName}");
+                    Console.WriteLine($"  Turn {game.TurnCount} - {game.CurrentPlayer}'s move");
+                    Console.WriteLine($"  Difficulty: {game.Difficulty}");
+                    Console.WriteLine($"  Saved: {game.SavedAt:yyyy-MM-dd HH:mm:ss}");
+                    Console.WriteLine();
+                }
+
+                // Prompt for game ID
+                Console.Write("Enter Game ID to load (or press ESC to cancel): ");
+                string input = Console.ReadLine();
+
+                if (string.IsNullOrWhiteSpace(input))
+                {
+                    return;
+                }
+
+                if (!int.TryParse(input, out int gameId))
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Invalid Game ID. Please enter a number.");
+                    Console.ResetColor();
+                    Console.WriteLine();
+                    Console.WriteLine("Press any key to return to main menu...");
+                    Console.ReadKey();
+                    return;
+                }
+
+                // Load the selected game
+                var snapshot = saveManager.LoadGame(gameId);
+                Console.WriteLine();
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine($"Loading Game #{gameId}...");
+                Console.ResetColor();
+                System.Threading.Thread.Sleep(1000);
+
+                // Parse difficulty
+                DifficultyLevel difficulty;
+                if (!Enum.TryParse<DifficultyLevel>(snapshot.Difficulty, out difficulty))
+                {
+                    difficulty = DifficultyLevel.Medium;
+                }
+                int aiDepth = (int)difficulty;
+
+                // Parse game mode
+                GameMode gameMode = (GameMode)Enum.Parse(typeof(GameMode), snapshot.GameMode);
+                PieceColor humanColor = (PieceColor)Enum.Parse(typeof(PieceColor), snapshot.HumanColor);
+
+                // Create AI instances if needed
+                IChessAI whiteAI = null;
+                IChessAI blackAI = null;
+
+                if (gameMode == GameMode.HumanVsAI)
+                {
+                    IChessAI ai = new BasicAI(depth: aiDepth, logger);
+                    if (humanColor == PieceColor.White)
+                    {
+                        blackAI = ai;  // AI plays black
+                    }
+                    else
+                    {
+                        whiteAI = ai;  // AI plays white
+                    }
+                }
+                else if (gameMode == GameMode.AIVsAI)
+                {
+                    whiteAI = new BasicAI(depth: aiDepth, logger);
+                    blackAI = new BasicAI(depth: aiDepth, logger);
+                }
+
+                // Create game and start
+                ChessGame game = new ChessGame(gameMode, humanColor, whiteAI, blackAI);
+
+                // Note: The game will start fresh, but user can use "load [gameId]" command in-game
+                Console.WriteLine();
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine($"Note: Use 'load {gameId}' command once in-game to restore the saved state.");
+                Console.ResetColor();
+                Console.WriteLine();
+                Console.WriteLine("Press any key to continue...");
+                Console.ReadKey();
+
+                game.Start();
+            }
+            catch (FileNotFoundException)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Game not found. It may have been deleted.");
+                Console.ResetColor();
+                Console.WriteLine();
+                Console.WriteLine("Press any key to return to main menu...");
+                Console.ReadKey();
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"Failed to load game: {ex.Message}");
+                Console.ResetColor();
+                Console.WriteLine();
+                Console.WriteLine("Press any key to return to main menu...");
+                Console.ReadKey();
+                logger.Error("Load game failed", ex);
             }
         }
 

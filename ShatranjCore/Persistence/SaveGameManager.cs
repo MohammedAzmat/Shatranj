@@ -52,6 +52,9 @@ namespace ShatranjCore.Persistence
             // Ensure we don't exceed max saves (excluding autosave)
             EnforceMaxSaveSlots();
 
+            // Mark as manual save
+            snapshot.SaveType = SaveType.Manual.ToString();
+
             try
             {
                 var options = new JsonSerializerOptions
@@ -79,6 +82,9 @@ namespace ShatranjCore.Persistence
         public string SaveAutosave(GameStateSnapshot snapshot)
         {
             string filePath = Path.Combine(saveDirectory, AUTOSAVE_FILENAME);
+
+            // Mark as auto save
+            snapshot.SaveType = SaveType.Auto.ToString();
 
             try
             {

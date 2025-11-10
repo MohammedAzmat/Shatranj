@@ -105,12 +105,13 @@ namespace ShatranjCore.UI
         }
 
         /// <summary>
-        /// Shows the main menu with Resume, New Game, Settings, Exit
+        /// Shows the main menu with Resume, New Game, Load Game, Settings, Exit
         /// </summary>
         public enum MainMenuChoice
         {
             Resume,
             NewGame,
+            LoadGame,
             Settings,
             Exit
         }
@@ -128,6 +129,7 @@ namespace ShatranjCore.UI
             int optionNumber = 1;
             int resumeOption = -1;
             int newGameOption = -1;
+            int loadGameOption = -1;
             int settingsOption = -1;
             int exitOption = -1;
 
@@ -139,6 +141,9 @@ namespace ShatranjCore.UI
 
             Console.WriteLine($"  [{optionNumber}] New Game     - Start a fresh game");
             newGameOption = optionNumber++;
+
+            Console.WriteLine($"  [{optionNumber}] Load Game    - Load a saved game");
+            loadGameOption = optionNumber++;
 
             Console.WriteLine($"  [{optionNumber}] Settings     - Configure game settings");
             settingsOption = optionNumber++;
@@ -171,6 +176,10 @@ namespace ShatranjCore.UI
                     else if (choice == newGameOption)
                     {
                         return MainMenuChoice.NewGame;
+                    }
+                    else if (choice == loadGameOption)
+                    {
+                        return MainMenuChoice.LoadGame;
                     }
                     else if (choice == settingsOption)
                     {
