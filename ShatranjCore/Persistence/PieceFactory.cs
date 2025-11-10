@@ -17,7 +17,9 @@ namespace ShatranjCore.Persistence
             switch (typeName)
             {
                 case "Pawn":
-                    return new Pawn(row, col, color);
+                    // Determine pawn direction based on color
+                    PawnMoves direction = (color == PieceColor.White) ? PawnMoves.Up : PawnMoves.Down;
+                    return new Pawn(row, col, color, direction);
                 case "Rook":
                     return new Rook(row, col, color);
                 case "Knight":

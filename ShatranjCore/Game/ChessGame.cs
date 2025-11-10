@@ -697,7 +697,7 @@ namespace ShatranjCore.Game
             }
             catch (Exception ex)
             {
-                logger.Warning("Autosave failed", ex);
+                logger.Warning($"Autosave failed: {ex.Message}");
                 // Don't interrupt gameplay for autosave failures
             }
         }
@@ -979,10 +979,8 @@ namespace ShatranjCore.Game
                 // 6. Restore en passant state
                 if (snapshot.EnPassantTargetRow.HasValue && snapshot.EnPassantTargetColumn.HasValue)
                 {
-                    Location enPassantTarget = new Location(
-                        snapshot.EnPassantTargetRow.Value,
-                        snapshot.EnPassantTargetColumn.Value
-                    );
+                    int targetRow = snapshot.EnPassantTargetRow.Value;
+                    int targetCol = snapshot.EnPassantTargetColumn.Value;
 
                     if (snapshot.EnPassantPawnRow.HasValue && snapshot.EnPassantPawnColumn.HasValue)
                     {
@@ -990,11 +988,15 @@ namespace ShatranjCore.Game
                             snapshot.EnPassantPawnRow.Value,
                             snapshot.EnPassantPawnColumn.Value
                         );
-                        Piece pawn = board.GetPiece(pawnLocation);
-                        if (pawn != null)
-                        {
-                            enPassantTracker.RegisterDoublePawnMove(pawn, enPassantTarget);
-                        }
+
+                        // Calculate the from/to locations for RecordPawnDoubleMove
+                        // If target is row 2, pawn moved from row 1 to row 3 (white)
+                        // If target is row 5, pawn moved from row 6 to row 4 (black)
+                        Location fromLocation = (targetRow == 2)
+                            ? new Location(1, targetCol)
+                            : new Location(6, targetCol);
+
+                        enPassantTracker.RecordPawnDoubleMove(fromLocation, pawnLocation);
                     }
                 }
 
@@ -1042,7 +1044,7 @@ namespace ShatranjCore.Game
             {
                 if (stateHistory.Count < 2)
                 {
-                    renderer.DisplayWarning("Cannot rollback - no previous state available");
+                    renderer.DisplayInfo("Cannot rollback - no previous state available");
                     logger.Info("Rollback failed - insufficient state history");
                     WaitForKey();
                     return;
@@ -1087,7 +1089,7 @@ namespace ShatranjCore.Game
             }
             catch (Exception ex)
             {
-                logger.Warning("Failed to cleanup game files", ex);
+                logger.Warning($"Failed to cleanup game files: {ex.Message}");
                 // Don't interrupt game ending for cleanup failures
             }
         }

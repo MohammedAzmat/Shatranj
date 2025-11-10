@@ -187,7 +187,7 @@ namespace ShatranjCore.Persistence
                     }
                     catch (Exception ex)
                     {
-                        logger?.Warning($"Failed to load metadata from {Path.GetFileName(file)}", ex);
+                        logger?.Warning($"Failed to load metadata from {Path.GetFileName(file)}: {ex.Message}");
                     }
                 }
             }
@@ -214,7 +214,7 @@ namespace ShatranjCore.Persistence
             }
             catch (Exception ex)
             {
-                logger?.Warning("Failed to load autosave metadata", ex);
+                logger?.Warning($"Failed to load autosave metadata: {ex.Message}");
             }
 
             return null;
@@ -292,7 +292,7 @@ namespace ShatranjCore.Persistence
             }
             catch (Exception ex)
             {
-                logger?.Warning("Failed to enforce save slot limit", ex);
+                logger?.Warning($"Failed to enforce save slot limit: {ex.Message}");
             }
         }
 
