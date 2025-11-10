@@ -25,6 +25,11 @@ namespace ShatranjIntegration.Tests
             GameFlowTests.RunAllTests();
             Console.WriteLine();
 
+            // Run save/load tests
+            Console.WriteLine("Running Save/Load tests...");
+            SaveLoadTests.RunAllTests();
+            Console.WriteLine();
+
             Console.WriteLine("\n═══════════════════════════════════════════════════════════════");
             Console.WriteLine($"Integration Test Suite Complete");
             Console.WriteLine("═══════════════════════════════════════════════════════════════");

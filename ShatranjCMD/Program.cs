@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -252,20 +253,20 @@ namespace ShatranjCMD
                 Console.WriteLine("Available saved games:");
                 Console.WriteLine();
 
-                foreach (var game in savedGames)
+                foreach (var savedGame in savedGames)
                 {
                     // Determine game type label
-                    string gameType = game.GameMode == "AIVsAI" ? "Sim" : "Game";
-                    string saveType = string.IsNullOrEmpty(game.SaveType) ? "Manual" : game.SaveType;
+                    string gameType = savedGame.GameMode == "AIVsAI" ? "Sim" : "Game";
+                    string saveType = string.IsNullOrEmpty(savedGame.SaveType) ? "Manual" : savedGame.SaveType;
 
                     Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.WriteLine($"{gameType} #{game.GameId} ({saveType})");
+                    Console.WriteLine($"{gameType} #{savedGame.GameId} ({saveType})");
                     Console.ResetColor();
-                    Console.WriteLine($"  Mode: {game.GameMode}");
-                    Console.WriteLine($"  Players: {game.WhitePlayerName} vs {game.BlackPlayerName}");
-                    Console.WriteLine($"  Turn {game.TurnCount} - {game.CurrentPlayer}'s move");
-                    Console.WriteLine($"  Difficulty: {game.Difficulty}");
-                    Console.WriteLine($"  Saved: {game.SavedAt:yyyy-MM-dd HH:mm:ss}");
+                    Console.WriteLine($"  Mode: {savedGame.GameMode}");
+                    Console.WriteLine($"  Players: {savedGame.WhitePlayerName} vs {savedGame.BlackPlayerName}");
+                    Console.WriteLine($"  Turn {savedGame.TurnCount} - {savedGame.CurrentPlayer}'s move");
+                    Console.WriteLine($"  Difficulty: {savedGame.Difficulty}");
+                    Console.WriteLine($"  Saved: {savedGame.SavedAt:yyyy-MM-dd HH:mm:ss}");
                     Console.WriteLine();
                 }
 

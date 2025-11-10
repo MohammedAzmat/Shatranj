@@ -1,8 +1,25 @@
 # Shatranj - Complete Project Context
 
-> **Last Updated**: November 2025
-> **Version**: Phase 2 - AI Integration (85% Complete)
+> **Last Updated**: November 10, 2025
+> **Version**: Phase 2 - Complete (100%)
 > **Purpose**: Comprehensive reference for all project files and their responsibilities
+
+---
+
+## 📝 Documentation Conventions
+
+**IMPORTANT**: All new markdown documentation files must be created in the `docs/` folder, not the root directory.
+
+**File Organization:**
+- `/docs/` - All documentation files (`.md`)
+- `/docs/archive/` - Archived/historical documentation
+- Root directory - Only keep: `README.md` (main project readme)
+
+**Examples:**
+- ✅ `/docs/PHASE_3_ROADMAP.md` (Correct)
+- ✅ `/docs/MODULARIZATION_PLAN.md` (Correct)
+- ✅ `/docs/archive/PHASE_2_SAVE_LOAD_SYSTEM.md` (Archived)
+- ❌ `/PHASE_3_ROADMAP.md` (Incorrect - not in docs/)
 
 ---
 
