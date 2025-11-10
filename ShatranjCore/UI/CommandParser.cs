@@ -38,6 +38,22 @@ namespace ShatranjCore.UI
                 case "game":
                     return ParseGameCommand(parts);
 
+                // Direct game commands (new simplified syntax)
+                case "start":
+                    return new GameCommand { Type = CommandType.StartGame };
+
+                case "save":
+                    return new GameCommand { Type = CommandType.SaveGame, FileName = parts.Length > 1 ? parts[1] : null };
+
+                case "load":
+                    return new GameCommand { Type = CommandType.LoadGame, FileName = parts.Length > 1 ? parts[1] : null };
+
+                case "restart":
+                    return new GameCommand { Type = CommandType.RestartGame };
+
+                case "end":
+                    return new GameCommand { Type = CommandType.EndGame };
+
                 case "quit":
                 case "exit":
                     return new GameCommand { Type = CommandType.Quit };
@@ -48,6 +64,9 @@ namespace ShatranjCore.UI
                 case "rollback":
                 case "undo":
                     return new GameCommand { Type = CommandType.Rollback };
+
+                case "redo":
+                    return new GameCommand { Type = CommandType.Redo };
 
                 case "settings":
                 case "config":
@@ -362,6 +381,7 @@ namespace ShatranjCore.UI
         EndGame,
         RestartGame,
         Rollback,
+        Redo,
         ShowSettings,
         ResetSettings,
         SetProfile,

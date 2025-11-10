@@ -54,8 +54,9 @@ namespace ShatranjCore.Game
         private string whitePlayerName;
         private string blackPlayerName;
 
-        // State history for rollback functionality
+        // State history for rollback/redo functionality
         private readonly List<GameStateSnapshot> stateHistory;
+        private readonly Stack<GameStateSnapshot> redoStack;
 
         public ChessGame(
             GameMode mode = GameMode.HumanVsHuman,
@@ -88,6 +89,7 @@ namespace ShatranjCore.Game
             configManager = new GameConfigManager(logger);
             saveManager = new SaveGameManager(logger);
             stateHistory = new List<GameStateSnapshot>();
+            redoStack = new Stack<GameStateSnapshot>();
 
             // Load configuration
             var config = configManager.GetConfig();
@@ -344,6 +346,10 @@ namespace ShatranjCore.Game
 
                 case CommandType.Rollback:
                     HandleRollbackCommand();
+                    break;
+
+                case CommandType.Redo:
+                    HandleRedoCommand();
                     break;
 
                 case CommandType.ShowSettings:
@@ -703,6 +709,9 @@ namespace ShatranjCore.Game
             players[1].HasTurn = !players[1].HasTurn;
             enPassantTracker.NextTurn();
 
+            // Clear redo stack on new move (can't redo after making a new move)
+            redoStack.Clear();
+
             // Autosave after each turn
             try
             {
@@ -864,7 +873,10 @@ namespace ShatranjCore.Game
 
                     foreach (var game in savedGames)
                     {
-                        renderer.DisplayInfo($"Game #{game.GameId}:");
+                        // Determine game type label
+                        string gameType = game.GameMode == "AIVsAI" ? "Sim" : "Game";
+
+                        renderer.DisplayInfo($"{gameType} #{game.GameId}:");
                         renderer.DisplayInfo($"  Mode: {game.GameMode}");
                         renderer.DisplayInfo($"  Players: {game.WhitePlayerName} vs {game.BlackPlayerName}");
                         renderer.DisplayInfo($"  Turn {game.TurnCount} - {game.CurrentPlayer}'s move");
@@ -873,8 +885,8 @@ namespace ShatranjCore.Game
                         renderer.DisplayInfo("");
                     }
 
-                    renderer.DisplayInfo("Usage: game load [gameId]");
-                    renderer.DisplayInfo("Example: game load 1");
+                    renderer.DisplayInfo("Usage: load [gameId]");
+                    renderer.DisplayInfo("Example: load 1");
                     WaitForKey();
                     return;
                 }
@@ -1094,8 +1106,12 @@ namespace ShatranjCore.Game
                     return;
                 }
 
-                // Get the previous state (last element is current, second to last is previous)
+                // Get the current and previous states
+                GameStateSnapshot currentState = stateHistory[stateHistory.Count - 1];
                 GameStateSnapshot previousState = stateHistory[stateHistory.Count - 2];
+
+                // Push current state to redo stack before rolling back
+                redoStack.Push(currentState);
 
                 // Remove current state from history
                 stateHistory.RemoveAt(stateHistory.Count - 1);
@@ -1103,14 +1119,50 @@ namespace ShatranjCore.Game
                 // Restore the previous state
                 RestoreFromSnapshot(previousState);
 
-                renderer.DisplayInfo("Game rolled back to previous turn");
+                renderer.DisplayInfo("Turn undone. Use 'redo' to restore.");
                 logger.Info($"Game rolled back to turn {previousState.MoveCount}");
                 WaitForKey();
             }
             catch (Exception ex)
             {
-                renderer.DisplayError($"Failed to rollback: {ex.Message}");
+                renderer.DisplayError($"Failed to undo: {ex.Message}");
                 logger.Error("Rollback failed", ex);
+                WaitForKey();
+            }
+        }
+
+        /// <summary>
+        /// Redoes the last undone turn
+        /// </summary>
+        private void HandleRedoCommand()
+        {
+            try
+            {
+                if (redoStack.Count == 0)
+                {
+                    renderer.DisplayInfo("Cannot redo - no undone turns available");
+                    logger.Info("Redo failed - redo stack is empty");
+                    WaitForKey();
+                    return;
+                }
+
+                // Pop the state from redo stack
+                GameStateSnapshot redoState = redoStack.Pop();
+
+                // Add it back to state history
+                stateHistory.Add(redoState);
+
+                // Restore the state
+                RestoreFromSnapshot(redoState);
+
+                renderer.DisplayInfo("Turn redone successfully");
+                logger.Info($"Game redone to turn {redoState.MoveCount}");
+                WaitForKey();
+            }
+            catch (Exception ex)
+            {
+                renderer.DisplayError($"Failed to redo: {ex.Message}");
+                logger.Error("Redo failed", ex);
                 WaitForKey();
             }
         }

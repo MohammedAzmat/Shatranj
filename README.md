@@ -369,16 +369,40 @@ Read more: [**SOLID_PRINCIPLES.md**](docs/SOLID_PRINCIPLES.md)
 
 ## 📋 Command Quick Reference
 
+### Gameplay Commands
 | Command | Description | Example |
 |---------|-------------|---------|
 | `move [from] [to]` | Move a piece | `move e2 e4` |
-| `castle [side]` | Castle king | `castle king` |
-| `help [location]` | Show legal moves | `help e2` |
+| `castle [side]` | Castle king | `castle king` or `castle` |
+| `undo` | Undo previous turn | `undo` |
+| `redo` | Redo last undo | `redo` |
+
+### Information Commands
+| Command | Description | Example |
+|---------|-------------|---------|
+| `help [location]` | Show legal moves | `help e2` or `help` |
 | `history` | View move history | `history` |
-| `game start` | New game | `game start` |
-| `game save [name]` | Save game | `game save mygame` |
-| `game load [name]` | Load game | `game load mygame` |
-| `quit` | Exit | `quit` |
+
+### Game Management Commands
+| Command | Description | Example |
+|---------|-------------|---------|
+| `start` | Start a new game | `start` |
+| `save` | Save current game | `save` |
+| `load [gameId]` | Load a saved game | `load 1` |
+| `restart` | Restart current game | `restart` |
+| `end` | End current game | `end` |
+
+### Settings Commands
+| Command | Description | Example |
+|---------|-------------|---------|
+| `settings` | Show/change settings | `settings` |
+| `settings difficulty [level]` | Set AI difficulty | `settings difficulty hard` |
+| `settings profile [name]` | Set player name | `settings profile Mohammed` |
+
+### Other Commands
+| Command | Description | Example |
+|---------|-------------|---------|
+| `quit` | Exit game | `quit` |
 
 ### Special Keys
 
