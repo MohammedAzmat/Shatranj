@@ -342,6 +342,30 @@ namespace ShatranjCore.Game
                     HandleLoadCommand(command);
                     break;
 
+                case CommandType.Rollback:
+                    HandleRollbackCommand();
+                    break;
+
+                case CommandType.ShowSettings:
+                    HandleShowSettingsCommand();
+                    break;
+
+                case CommandType.ResetSettings:
+                    HandleResetSettingsCommand();
+                    break;
+
+                case CommandType.SetProfile:
+                    HandleSetProfileCommand(command);
+                    break;
+
+                case CommandType.SetOpponent:
+                    HandleSetOpponentCommand(command);
+                    break;
+
+                case CommandType.SetDifficulty:
+                    HandleSetDifficultyCommand(command);
+                    break;
+
                 case CommandType.Quit:
                     renderer.DisplayInfo("Thanks for playing Shatranj!");
                     isRunning = false;
@@ -1069,6 +1093,186 @@ namespace ShatranjCore.Game
                 logger.Error("Rollback failed", ex);
                 WaitForKey();
             }
+        }
+
+        /// <summary>
+        /// Shows the settings menu
+        /// </summary>
+        private void HandleShowSettingsCommand()
+        {
+            try
+            {
+                var config = configManager.GetConfig();
+
+                renderer.DisplayInfo("════════════════════════════════════════");
+                renderer.DisplayInfo("           GAME SETTINGS");
+                renderer.DisplayInfo("════════════════════════════════════════");
+                renderer.DisplayInfo($"  Profile Name: {config.ProfileName}");
+                renderer.DisplayInfo($"  Opponent Name: {config.OpponentProfileName}");
+                renderer.DisplayInfo($"  Difficulty: {config.Difficulty} (Depth {(int)config.Difficulty})");
+                renderer.DisplayInfo("════════════════════════════════════════");
+                renderer.DisplayInfo("");
+                renderer.DisplayInfo("Commands:");
+                renderer.DisplayInfo("  settings profile [name]     - Set your name");
+                renderer.DisplayInfo("  settings opponent [name]    - Set opponent name");
+                renderer.DisplayInfo("  settings difficulty [level] - Set AI difficulty");
+                renderer.DisplayInfo("    Difficulty options: easy, medium, hard, veryhard, titan");
+                renderer.DisplayInfo("    Or use numbers: 1 (Easy) to 5 (Titan)");
+                renderer.DisplayInfo("  settings reset              - Reset to defaults");
+                renderer.DisplayInfo("");
+
+                logger.Info("Settings menu displayed");
+            }
+            catch (Exception ex)
+            {
+                renderer.DisplayError($"Failed to display settings: {ex.Message}");
+                logger.Error("Settings display failed", ex);
+            }
+
+            WaitForKey();
+        }
+
+        /// <summary>
+        /// Resets settings to defaults
+        /// </summary>
+        private void HandleResetSettingsCommand()
+        {
+            try
+            {
+                configManager.ResetToDefaults();
+                var config = configManager.GetConfig();
+
+                // Update local values
+                difficulty = config.Difficulty;
+                whitePlayerName = config.ProfileName;
+                blackPlayerName = config.OpponentProfileName;
+
+                renderer.DisplayInfo("Settings reset to defaults:");
+                renderer.DisplayInfo($"  Profile: {config.ProfileName}");
+                renderer.DisplayInfo($"  Opponent: {config.OpponentProfileName}");
+                renderer.DisplayInfo($"  Difficulty: {config.Difficulty}");
+
+                logger.Info("Settings reset to defaults");
+            }
+            catch (Exception ex)
+            {
+                renderer.DisplayError($"Failed to reset settings: {ex.Message}");
+                logger.Error("Settings reset failed", ex);
+            }
+
+            WaitForKey();
+        }
+
+        /// <summary>
+        /// Sets the player profile name
+        /// </summary>
+        private void HandleSetProfileCommand(GameCommand command)
+        {
+            try
+            {
+                string newName = command.FileName; // Reusing FileName field
+                configManager.SetProfileName(newName);
+                whitePlayerName = newName;
+
+                renderer.DisplayInfo($"Profile name set to: {newName}");
+                logger.Info($"Profile name changed to: {newName}");
+            }
+            catch (Exception ex)
+            {
+                renderer.DisplayError($"Failed to set profile name: {ex.Message}");
+                logger.Error("Set profile failed", ex);
+            }
+
+            WaitForKey();
+        }
+
+        /// <summary>
+        /// Sets the opponent profile name
+        /// </summary>
+        private void HandleSetOpponentCommand(GameCommand command)
+        {
+            try
+            {
+                string newName = command.FileName; // Reusing FileName field
+                configManager.SetOpponentProfileName(newName);
+                blackPlayerName = newName;
+
+                renderer.DisplayInfo($"Opponent name set to: {newName}");
+                logger.Info($"Opponent name changed to: {newName}");
+            }
+            catch (Exception ex)
+            {
+                renderer.DisplayError($"Failed to set opponent name: {ex.Message}");
+                logger.Error("Set opponent failed", ex);
+            }
+
+            WaitForKey();
+        }
+
+        /// <summary>
+        /// Sets the AI difficulty level
+        /// </summary>
+        private void HandleSetDifficultyCommand(GameCommand command)
+        {
+            try
+            {
+                string difficultyStr = command.FileName; // Reusing FileName field
+                DifficultyLevel newDifficulty;
+
+                // Try parsing as number first (1-5)
+                if (int.TryParse(difficultyStr, out int difficultyNum))
+                {
+                    // Map 1-5 to difficulty levels
+                    switch (difficultyNum)
+                    {
+                        case 1:
+                            newDifficulty = DifficultyLevel.Easy;
+                            break;
+                        case 2:
+                            newDifficulty = DifficultyLevel.Medium;
+                            break;
+                        case 3:
+                            newDifficulty = DifficultyLevel.Hard;
+                            break;
+                        case 4:
+                            newDifficulty = DifficultyLevel.VeryHard;
+                            break;
+                        case 5:
+                            newDifficulty = DifficultyLevel.Titan;
+                            break;
+                        default:
+                            renderer.DisplayError("Difficulty must be between 1-5");
+                            WaitForKey();
+                            return;
+                    }
+                }
+                else
+                {
+                    // Try parsing as difficulty name
+                    if (!Enum.TryParse<DifficultyLevel>(difficultyStr, true, out newDifficulty))
+                    {
+                        renderer.DisplayError("Invalid difficulty. Use: easy, medium, hard, veryhard, titan, or 1-5");
+                        WaitForKey();
+                        return;
+                    }
+                }
+
+                configManager.SetDifficulty(newDifficulty);
+                difficulty = newDifficulty;
+
+                renderer.DisplayInfo($"Difficulty set to: {newDifficulty} (Depth {(int)newDifficulty})");
+                logger.Info($"Difficulty changed to: {newDifficulty}");
+
+                // Note: This will take effect for new games or newly created AI instances
+                renderer.DisplayInfo("Note: Difficulty change will apply to new games");
+            }
+            catch (Exception ex)
+            {
+                renderer.DisplayError($"Failed to set difficulty: {ex.Message}");
+                logger.Error("Set difficulty failed", ex);
+            }
+
+            WaitForKey();
         }
 
         /// <summary>
