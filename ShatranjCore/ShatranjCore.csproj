@@ -7,4 +7,8 @@
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ShatranjCore.Abstractions\ShatranjCore.Abstractions.csproj" />
+  </ItemGroup>
+
 </Project>

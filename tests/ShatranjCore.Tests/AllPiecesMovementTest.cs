@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ShatranjCore;
+using ShatranjCore.Abstractions;
 using ShatranjCore.Pieces;
 using ShatranjCore.Board;
 using ShatranjCore.Interfaces;

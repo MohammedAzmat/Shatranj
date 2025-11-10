@@ -1,10 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using ShatranjCore.Abstractions;
 using ShatranjCore.Board;
 using ShatranjCore.Handlers;
 using ShatranjCore.Interfaces;
+using ShatranjCore.Learning;
+using ShatranjCore.Logging;
 using ShatranjCore.Movement;
+using ShatranjCore.Persistence;
 using ShatranjCore.Pieces;
 using ShatranjCore.UI;
 using ShatranjCore.Validators;
@@ -12,10 +17,10 @@ using ShatranjCore.Validators;
 namespace ShatranjCore.Game
 {
     /// <summary>
-    /// Enhanced Chess Game with improved terminal UI and command system.
+    /// Chess Game with terminal UI and command system.
     /// Follows SOLID principles with dependency injection and separation of concerns.
     /// </summary>
-    public class EnhancedChessGame
+    public class ChessGame
     {
         private readonly IChessBoard board;
         private readonly ConsoleBoardRenderer renderer;
@@ -31,8 +36,21 @@ namespace ShatranjCore.Game
         private PieceColor currentPlayer;
         private GameResult gameResult;
         private bool isRunning;
+        private GameMode gameMode;
+        private PieceColor humanColor;
 
-        public EnhancedChessGame()
+        // AI and infrastructure
+        private IChessAI whiteAI;
+        private IChessAI blackAI;
+        private readonly ILogger logger;
+        private readonly GameRecorder recorder;
+        private readonly GameSerializer serializer;
+
+        public ChessGame(
+            GameMode mode = GameMode.HumanVsHuman,
+            PieceColor humanPlayerColor = PieceColor.White,
+            IChessAI whiteAI = null,
+            IChessAI blackAI = null)
         {
             board = new ChessBoard(PieceColor.White);
             renderer = new ConsoleBoardRenderer();
@@ -44,6 +62,41 @@ namespace ShatranjCore.Game
             enPassantTracker = new EnPassantTracker();
             capturedPieces = new List<Piece>();
             gameResult = GameResult.InProgress;
+            gameMode = mode;
+            humanColor = humanPlayerColor;
+
+            // Initialize logging and infrastructure
+            logger = new CompositeLogger(
+                new FileLogger(),
+                new ConsoleLogger(includeTimestamp: false)
+            );
+            recorder = new GameRecorder(logger);
+            serializer = new GameSerializer(logger);
+
+            // Set AI instances from constructor parameters
+            this.whiteAI = whiteAI;
+            this.blackAI = blackAI;
+
+            // Log game mode
+            if (mode == GameMode.HumanVsAI)
+            {
+                if (humanPlayerColor == PieceColor.White)
+                {
+                    logger.Info("Game mode: Human (White) vs AI (Black)");
+                }
+                else
+                {
+                    logger.Info("Game mode: AI (White) vs Human (Black)");
+                }
+            }
+            else if (mode == GameMode.AIVsAI)
+            {
+                logger.Info("Game mode: AI vs AI");
+            }
+            else
+            {
+                logger.Info("Game mode: Human vs Human");
+            }
         }
 
         /// <summary>
@@ -67,12 +120,55 @@ namespace ShatranjCore.Game
             moveHistory.Clear();
             enPassantTracker.Reset();
 
-            // Initialize players
+            // Initialize players based on game mode
             players = new Player[2];
-            players[0] = new Player(PieceColor.White, PlayerType.Human) { HasTurn = true };
-            players[1] = new Player(PieceColor.Black, PlayerType.Human) { HasTurn = false };
 
-            renderer.DisplayInfo("New game started! White moves first.");
+            string whitePlayerType = "Human";
+            string blackPlayerType = "Human";
+
+            switch (gameMode)
+            {
+                case GameMode.HumanVsHuman:
+                    players[0] = new Player(PieceColor.White, PlayerType.Human) { HasTurn = true };
+                    players[1] = new Player(PieceColor.Black, PlayerType.Human) { HasTurn = false };
+                    renderer.DisplayInfo("New game started! White moves first.");
+                    break;
+
+                case GameMode.HumanVsAI:
+                    // Set up human and AI based on chosen color
+                    if (humanColor == PieceColor.White)
+                    {
+                        players[0] = new Player(PieceColor.White, PlayerType.Human) { HasTurn = true };
+                        players[1] = new Player(PieceColor.Black, PlayerType.AI) { HasTurn = false };
+                        blackPlayerType = "AI:BasicAI";
+                        renderer.DisplayInfo("New game started! You are White. You move first.");
+                    }
+                    else
+                    {
+                        players[0] = new Player(PieceColor.White, PlayerType.AI) { HasTurn = true };
+                        players[1] = new Player(PieceColor.Black, PlayerType.Human) { HasTurn = false };
+                        whitePlayerType = "AI:BasicAI";
+                        renderer.DisplayInfo("New game started! You are Black. AI moves first.");
+                    }
+                    break;
+
+                case GameMode.AIVsAI:
+                    players[0] = new Player(PieceColor.White, PlayerType.AI) { HasTurn = true };
+                    players[1] = new Player(PieceColor.Black, PlayerType.AI) { HasTurn = false };
+                    whitePlayerType = "AI:BasicAI";
+                    blackPlayerType = "AI:BasicAI";
+                    renderer.DisplayInfo("New game started! AI vs AI. White AI moves first.");
+                    break;
+            }
+
+            // Start recording the game
+            recorder.StartNewGame(gameMode, whitePlayerType, blackPlayerType);
+            if (whiteAI != null || blackAI != null)
+            {
+                recorder.SetAIMetadata("BasicAI_v1.0", 3);
+            }
+
+            logger.Info($"New game initialized - Mode: {gameMode}");
         }
 
         /// <summary>
@@ -90,6 +186,11 @@ namespace ShatranjCore.Game
                     renderer.DisplayGameOver(GameResult.Checkmate, winner);
                     gameResult = GameResult.Checkmate;
                     isRunning = false;
+
+                    // Record game end
+                    recorder.EndGame(winner.ToString(), "Checkmate");
+                    logger.Info($"Game ended - Winner: {winner} by Checkmate");
+
                     WaitForKey();
                     break;
                 }
@@ -100,6 +201,11 @@ namespace ShatranjCore.Game
                     renderer.DisplayGameOver(GameResult.Stalemate);
                     gameResult = GameResult.Stalemate;
                     isRunning = false;
+
+                    // Record game end
+                    recorder.EndGame("Draw", "Stalemate");
+                    logger.Info("Game ended - Draw by Stalemate");
+
                     WaitForKey();
                     break;
                 }
@@ -122,11 +228,34 @@ namespace ShatranjCore.Game
                 };
                 renderer.DisplayGameStatus(status);
 
-                // Get and process command
-                Console.Write($"{currentPlayer} > ");
-                string input = Console.ReadLine();
+                // Determine if current player is AI
+                IChessAI currentAI = currentPlayer == PieceColor.White ? whiteAI : blackAI;
 
-                ProcessCommand(input);
+                if (currentAI != null)
+                {
+                    // AI turn
+                    HandleAIMove(currentAI);
+
+                    // Add delay for AI vs AI mode for visibility
+                    if (gameMode == GameMode.AIVsAI)
+                    {
+                        Thread.Sleep(1000); // 1 second delay
+                    }
+                }
+                else
+                {
+                    // Human turn
+                    Console.Write($"{currentPlayer} > ");
+                    string input = Console.ReadLine();
+                    ProcessCommand(input);
+                }
+            }
+
+            // Record game end if not already recorded (e.g., user quit)
+            if (gameResult == GameResult.InProgress)
+            {
+                recorder.EndGame("None", "Incomplete");
+                logger.Info("Game ended - Incomplete");
             }
         }
 
@@ -177,8 +306,11 @@ namespace ShatranjCore.Game
                     break;
 
                 case CommandType.SaveGame:
-                    renderer.DisplayInfo("Game saving not yet implemented.");
-                    WaitForKey();
+                    HandleSaveCommand(command);
+                    break;
+
+                case CommandType.LoadGame:
+                    HandleLoadCommand(command);
                     break;
 
                 case CommandType.Quit:
@@ -536,6 +668,220 @@ namespace ShatranjCore.Game
             char file = (char)('a' + location.Column);
             int rank = 8 - location.Row;
             return $"{file}{rank}";
+        }
+
+        /// <summary>
+        /// Handles AI move selection and execution.
+        /// </summary>
+        private void HandleAIMove(IChessAI ai)
+        {
+            try
+            {
+                renderer.DisplayInfo($"{currentPlayer} (AI) is thinking...");
+
+                Location? enPassantTarget = enPassantTracker.GetEnPassantTarget();
+                AIMove aiMove = ai.SelectMove(board, currentPlayer, enPassantTarget);
+
+                if (aiMove == null)
+                {
+                    renderer.DisplayError("AI failed to select a move!");
+                    logger.Error($"AI failed to select move for {currentPlayer}");
+                    isRunning = false;
+                    return;
+                }
+
+                string fromAlg = LocationToAlgebraic(aiMove.From);
+                string toAlg = LocationToAlgebraic(aiMove.To);
+                renderer.DisplayInfo($"{currentPlayer} moves: {fromAlg} -> {toAlg} (Eval: {aiMove.Evaluation:F2})");
+                logger.Info($"AI move: {fromAlg} -> {toAlg}, Eval: {aiMove.Evaluation:F2}, Nodes: {aiMove.NodesEvaluated}, Time: {aiMove.ThinkingTimeMs}ms");
+
+                Piece piece = board.GetPiece(aiMove.From);
+                if (piece == null)
+                {
+                    renderer.DisplayError($"No piece at {fromAlg}!");
+                    logger.Error($"AI selected invalid move - no piece at {fromAlg}");
+                    isRunning = false;
+                    return;
+                }
+
+                // Get move info before executing
+                Piece capturedPiece = board.GetPiece(aiMove.To);
+                bool wasCapture = capturedPiece != null;
+
+                // Execute the move
+                ExecuteMove(aiMove.From, aiMove.To, piece);
+
+                // Check game state after move
+                PieceColor opponent = currentPlayer == PieceColor.White ? PieceColor.Black : PieceColor.White;
+                bool causedCheck = checkDetector.IsKingInCheck(board, opponent);
+                bool causedCheckmate = causedCheck && checkDetector.IsCheckmate(board, opponent);
+
+                // Record the move for learning
+                recorder.RecordMove(
+                    currentPlayer,
+                    aiMove.From,
+                    aiMove.To,
+                    piece.GetType().Name,
+                    $"{fromAlg}{toAlg}",
+                    wasCapture,
+                    causedCheck,
+                    causedCheckmate,
+                    aiMove.Evaluation,
+                    aiMove.ThinkingTimeMs
+                );
+
+                // Switch turns
+                SwitchTurns();
+            }
+            catch (Exception ex)
+            {
+                renderer.DisplayError($"AI error: {ex.Message}");
+                logger.Error("AI move execution failed", ex);
+                isRunning = false;
+            }
+        }
+
+        /// <summary>
+        /// Handles save game command.
+        /// </summary>
+        private void HandleSaveCommand(GameCommand command)
+        {
+            try
+            {
+                GameStateSnapshot snapshot = CreateSnapshot();
+                string filePath = serializer.SaveGame(snapshot, command.FileName);
+                renderer.DisplayInfo($"Game saved successfully!");
+                renderer.DisplayInfo($"Location: {filePath}");
+                logger.Info($"Game saved to {filePath}");
+            }
+            catch (Exception ex)
+            {
+                renderer.DisplayError($"Failed to save game: {ex.Message}");
+                logger.Error("Game save failed", ex);
+            }
+            WaitForKey();
+        }
+
+        /// <summary>
+        /// Handles load game command.
+        /// </summary>
+        private void HandleLoadCommand(GameCommand command)
+        {
+            try
+            {
+                string filePath = command.FileName;
+
+                // If no filename provided, list saved games
+                if (string.IsNullOrEmpty(filePath))
+                {
+                    string[] savedGames = serializer.ListSavedGames();
+                    if (savedGames.Length == 0)
+                    {
+                        renderer.DisplayInfo("No saved games found.");
+                        WaitForKey();
+                        return;
+                    }
+
+                    renderer.DisplayInfo("Saved games:");
+                    for (int i = 0; i < savedGames.Length; i++)
+                    {
+                        renderer.DisplayInfo($"  {i + 1}. {System.IO.Path.GetFileName(savedGames[i])}");
+                    }
+                    renderer.DisplayInfo("Usage: game load <filename>");
+                    WaitForKey();
+                    return;
+                }
+
+                // Load the game
+                GameStateSnapshot snapshot = serializer.LoadGame(filePath);
+                RestoreFromSnapshot(snapshot);
+                renderer.DisplayInfo("Game loaded successfully!");
+                logger.Info($"Game loaded from {filePath}");
+            }
+            catch (Exception ex)
+            {
+                renderer.DisplayError($"Failed to load game: {ex.Message}");
+                logger.Error("Game load failed", ex);
+            }
+            WaitForKey();
+        }
+
+        /// <summary>
+        /// Creates a snapshot of the current game state.
+        /// </summary>
+        private GameStateSnapshot CreateSnapshot()
+        {
+            var snapshot = new GameStateSnapshot
+            {
+                GameMode = gameMode.ToString(),
+                CurrentPlayer = currentPlayer.ToString(),
+                HumanColor = humanColor.ToString(),
+                GameResult = gameResult.ToString(),
+                WhitePlayerType = players[0].Type.ToString(),
+                BlackPlayerType = players[1].Type.ToString(),
+                MoveCount = moveHistory.GetMoves().Count
+            };
+
+            // Save all pieces
+            for (int row = 0; row < 8; row++)
+            {
+                for (int col = 0; col < 8; col++)
+                {
+                    Piece piece = board.GetPiece(new Location(row, col));
+                    if (piece != null)
+                    {
+                        snapshot.Pieces.Add(new PieceData
+                        {
+                            Type = piece.GetType().Name,
+                            Color = piece.Color.ToString(),
+                            Row = row,
+                            Column = col,
+                            HasMoved = piece.isMoved
+                        });
+                    }
+                }
+            }
+
+            // Save captured pieces
+            foreach (var piece in capturedPieces)
+            {
+                snapshot.CapturedPieces.Add(new PieceData
+                {
+                    Type = piece.GetType().Name,
+                    Color = piece.Color.ToString(),
+                    Row = 0,
+                    Column = 0,
+                    HasMoved = true
+                });
+            }
+
+            // Save move history
+            foreach (var move in moveHistory.GetMoves())
+            {
+                snapshot.MoveHistory.Add(move.AlgebraicNotation);
+            }
+
+            // Save en passant state
+            Location? enPassantTarget = enPassantTracker.GetEnPassantTarget();
+            if (enPassantTarget.HasValue)
+            {
+                snapshot.EnPassantTargetRow = enPassantTarget.Value.Row;
+                snapshot.EnPassantTargetColumn = enPassantTarget.Value.Column;
+            }
+
+            return snapshot;
+        }
+
+        /// <summary>
+        /// Restores game state from a snapshot.
+        /// </summary>
+        private void RestoreFromSnapshot(GameStateSnapshot snapshot)
+        {
+            // Note: This is a simplified restoration
+            // A full implementation would need to restore en passant, castling rights, etc.
+            renderer.DisplayInfo("Game state restoration is not yet fully implemented.");
+            renderer.DisplayInfo("This feature will be completed in a future update.");
+            logger.Warning("RestoreFromSnapshot called but not fully implemented");
         }
     }
 }

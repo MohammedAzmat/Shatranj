@@ -1,4 +1,5 @@
 ﻿using System;
+using ShatranjCore.Abstractions;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -270,6 +271,41 @@ namespace ShatranjCore.Board
         {
             return IsInBounds(location.Row, location.Column);
         }
+
+        #region Explicit IBoardState Implementation
+        // Explicit implementations for IBoardState (returns object instead of Piece)
+        // These are only accessible when cast to IBoardState
+
+        object IBoardState.GetPiece(Location location)
+        {
+            return GetPiece(location);
+        }
+
+        List<object> IBoardState.GetPiecesOfColor(PieceColor color)
+        {
+            return GetPiecesOfColor(color).Cast<object>().ToList();
+        }
+
+        List<object> IBoardState.GetOpponentPieces(PieceColor color)
+        {
+            return GetOpponentPieces(color).Cast<object>().ToList();
+        }
+
+        void IBoardState.PlacePiece(object piece, Location location)
+        {
+            PlacePiece((Piece)piece, location);
+        }
+
+        object IBoardState.RemovePiece(Location location)
+        {
+            return RemovePiece(location);
+        }
+
+        object IBoardState.FindKing(PieceColor color)
+        {
+            return FindKing(color);
+        }
+        #endregion
 
         #endregion
     }

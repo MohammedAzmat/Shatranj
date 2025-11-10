@@ -24,11 +24,11 @@ This document provides comprehensive instructions for building and testing the S
 
 ### Platform Support
 
-- ✅ **Windows** - Fully supported (including Windows Forms GUI)
-- ✅ **Linux** - Supported (command-line only)
-- ✅ **macOS** - Supported (command-line only)
+- ✅ **Windows** - Fully supported
+- ✅ **Linux** - Fully supported
+- ✅ **macOS** - Fully supported
 
-Note: The Windows Forms GUI project (ShatranjMain) only builds on Windows with .NET 9.0-windows target framework.
+Note: All projects are cross-platform compatible. GUI versions are planned for Phase 5.
 
 ---
 
@@ -69,17 +69,26 @@ dotnet build --configuration Release
 #### Build Specific Projects
 
 ```bash
-# Build core library only
+# Build abstractions library (no dependencies)
+dotnet build ShatranjCore.Abstractions/ShatranjCore.Abstractions.csproj
+
+# Build core library
 dotnet build ShatranjCore/ShatranjCore.csproj
+
+# Build AI library
+dotnet build ShatranjAI/ShatranjAI.csproj
 
 # Build command-line application
 dotnet build ShatranjCMD/ShatranjCMD.csproj
 
-# Build Windows Forms GUI (Windows only)
-dotnet build ShatranjMain/ShatranjMain.csproj
-
-# Build test project
+# Build core test project
 dotnet build tests/ShatranjCore.Tests/ShatranjCore.Tests.csproj
+
+# Build AI test project
+dotnet build ShatranjAI.Tests/ShatranjAI.Tests.csproj
+
+# Build integration test project
+dotnet build tests/ShatranjIntegration.Tests/ShatranjIntegration.Tests.csproj
 ```
 
 #### Clean Build
@@ -135,33 +144,40 @@ dotnet run
 ShatranjCMD\bin\Debug\net9.0\ShatranjCMD.exe
 ```
 
-### Windows Forms GUI (ShatranjMain) - Windows Only
-
-#### Using .NET CLI
-
-```bash
-dotnet run --project ShatranjMain
-```
-
-#### Using Visual Studio
-
-1. Set `ShatranjMain` as the startup project (right-click → Set as Startup Project)
-2. Press `F5` or click **Start**
-
 ---
 
 ## Running Tests
 
+The project has three test suites organized in a test pyramid:
+
 ### Using .NET CLI
 
-#### Run All Tests
+#### Run All Test Suites
 
 ```bash
-# Run the custom test runner
+# Run core tests (40+ tests)
 dotnet run --project tests/ShatranjCore.Tests
 
-# Alternative: Run from test directory
+# Run AI tests (6 tests)
+dotnet run --project ShatranjAI.Tests
+
+# Run integration tests (6 tests)
+dotnet run --project tests/ShatranjIntegration.Tests
+```
+
+#### Run from Test Directory
+
+```bash
+# Core tests
 cd tests/ShatranjCore.Tests
+dotnet run
+
+# AI tests
+cd ShatranjAI.Tests
+dotnet run
+
+# Integration tests
+cd tests/ShatranjIntegration.Tests
 dotnet run
 ```
 
@@ -170,6 +186,8 @@ dotnet run
 ```bash
 dotnet run --project tests/ShatranjCore.Tests --verbosity detailed
 ```
+
+For detailed test documentation, see [TESTING.md](docs/TESTING.md)
 
 ### Expected Test Output
 
@@ -209,13 +227,25 @@ All 40 tests passed! ✓
 
 ### Test Coverage
 
-The test suite includes 40 comprehensive tests:
+The project has 50+ comprehensive tests across three test suites:
+
+**ShatranjCore.Tests (40+ tests)**
 - ✅ Rook tests (6)
 - ✅ Knight tests (6)
 - ✅ Bishop tests (6)
 - ✅ Queen tests (6)
 - ✅ King tests (6)
 - ✅ Pawn tests (10 including en passant)
+- ✅ Castling tests (6)
+- ✅ Check detection tests (4)
+
+**ShatranjAI.Tests (6 tests)**
+- ✅ BasicAI tests (3)
+- ✅ MoveEvaluator tests (3)
+
+**ShatranjIntegration.Tests (6 tests)**
+- ✅ AI Integration tests (3)
+- ✅ Game Flow tests (3)
 
 ---
 
@@ -328,16 +358,6 @@ dotnet build
 
 **Solution**: Install .NET 9 SDK or higher.
 
-#### Windows Forms Project Won't Build on Linux/Mac
-
-**Expected behavior**: The `ShatranjMain` project targets `net9.0-windows` and requires Windows to build.
-
-**Solution**: Build only command-line projects on non-Windows platforms:
-```bash
-dotnet build ShatranjCore/ShatranjCore.csproj
-dotnet build ShatranjCMD/ShatranjCMD.csproj
-```
-
 ### Common Test Errors
 
 #### "Assembly not found" Error
@@ -395,28 +415,52 @@ dotnet watch --project ShatranjCMD run
 
 ```
 Shatranj/
-├── Shatranj.sln                  # Solution file
-├── ShatranjCore/                 # Core game logic library
-│   └── ShatranjCore.csproj      # .NET 9 library
-├── ShatranjCMD/                  # Command-line application
-│   └── ShatranjCMD.csproj       # .NET 9 console app
-├── ShatranjMain/                 # Windows Forms GUI
-│   └── ShatranjMain.csproj      # .NET 9 Windows app
+├── Shatranj.sln                       # Solution file
+├── ShatranjCore.Abstractions/         # Core abstractions (NO DEPENDENCIES)
+│   └── ShatranjCore.Abstractions.csproj  # .NET 9 library
+├── ShatranjCore/                      # Core game logic library
+│   └── ShatranjCore.csproj           # .NET 9 library
+├── ShatranjAI/                        # AI implementation
+│   └── ShatranjAI.csproj             # .NET 9 library
+├── ShatranjCMD/                       # Command-line application
+│   └── ShatranjCMD.csproj            # .NET 9 console app
 └── tests/
-    └── ShatranjCore.Tests/       # Unit tests
-        └── ShatranjCore.Tests.csproj  # .NET 9 test project
+    ├── ShatranjCore.Tests/            # Core unit tests (40+ tests)
+    │   └── ShatranjCore.Tests.csproj # .NET 9 test project
+    ├── ShatranjAI.Tests/              # AI unit tests (6 tests)
+    │   └── ShatranjAI.Tests.csproj   # .NET 9 test project
+    └── ShatranjIntegration.Tests/     # Integration tests (6 tests)
+        └── ShatranjIntegration.Tests.csproj  # .NET 9 test project
+```
+
+### Dependency Graph
+
+```
+ShatranjCore.Abstractions (no dependencies)
+    ↑               ↑
+    │               │
+    │               └─────── ShatranjAI
+    │                            ↑
+    │                            │
+    └─── ShatranjCore ───────────┘
+            ↑
+            │
+        ShatranjCMD
 ```
 
 ---
 
 ## Additional Resources
 
-- **.NET 9 Documentation**: https://docs.microsoft.com/dotnet/core/whats-new/dotnet-8
+- **.NET 9 Documentation**: https://docs.microsoft.com/dotnet/core/whats-new/dotnet-9
 - **Project Documentation**: See `docs/` folder
-  - `PROJECT_ROADMAP.md` - Development phases
-  - `SOLID_PRINCIPLES.md` - Architecture guide
-  - `TERMINAL_COMMANDS.md` - Command reference
-- **GitHub Repository**: (Your repository URL)
+  - `ARCHITECTURE.md` - Technical architecture details
+  - `TESTING.md` - Test architecture and running tests
+  - `SOLID_PRINCIPLES.md` - Architecture guide and SOLID analysis
+- **Main Documentation**:
+  - `README.md` - Quick start guide
+  - `ROADMAP.md` - Complete development roadmap
+- **GitHub Repository**: https://github.com/YourUsername/Shatranj
 
 ---
 

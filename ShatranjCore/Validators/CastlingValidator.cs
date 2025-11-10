@@ -1,4 +1,5 @@
 using System;
+using ShatranjCore.Abstractions;
 using ShatranjCore.Interfaces;
 using ShatranjCore.Pieces;
 

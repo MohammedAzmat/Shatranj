@@ -1,7 +1,7 @@
 # Shatranj - Architecture Documentation
 
 > **Last Updated**: November 2025
-> **Version**: Phase 1 Complete
+> **Version**: Phase 2 - AI Integration (85% Complete)
 > **SOLID Score**: 9/10
 
 This document provides a comprehensive technical overview of the Shatranj chess project architecture.
@@ -10,50 +10,58 @@ This document provides a comprehensive technical overview of the Shatranj chess 
 
 ## Table of Contents
 1. [Architectural Overview](#architectural-overview)
-2. [Modular Structure](#modular-structure)
-3. [Core Abstractions](#core-abstractions)
-4. [Design Patterns](#design-patterns)
-5. [Data Flow](#data-flow)
-6. [Key Algorithms](#key-algorithms)
-7. [Extensibility](#extensibility)
+2. [Project Structure](#project-structure)
+3. [Abstractions Layer](#abstractions-layer)
+4. [Core Abstractions](#core-abstractions)
+5. [Design Patterns](#design-patterns)
+6. [Data Flow](#data-flow)
+7. [Key Algorithms](#key-algorithms)
+8. [Extensibility](#extensibility)
 
 ---
 
 ## Architectural Overview
 
 ### Architecture Style
-Shatranj follows a **Layered Architecture** with clear separation of concerns:
+Shatranj follows a **Layered Architecture** with proper **Dependency Inversion**:
 
 ```
-┌─────────────────────────────────────────┐
-│         Presentation Layer              │
-│  (ShatranjCMD, ShatranjMain - future)   │
-└─────────────────────────────────────────┘
-                  │
-                  ↓
-┌─────────────────────────────────────────┐
-│          Game Logic Layer               │
-│    (EnhancedChessGame, Player)          │
-└─────────────────────────────────────────┘
-                  │
-                  ↓
-┌─────────────────────────────────────────┐
-│       Validation & Rules Layer          │
-│  (CheckDetector, CastlingValidator,     │
-│   EnPassantTracker, MoveMaker)          │
-└─────────────────────────────────────────┘
-                  │
-                  ↓
-┌─────────────────────────────────────────┐
-│          Domain Model Layer             │
-│  (Pieces, Board, Square, Location)      │
-└─────────────────────────────────────────┘
-                  │
-                  ↓
-┌─────────────────────────────────────────┐
-│         Infrastructure Layer            │
-│  (IChessBoard interface, utilities)     │
-└─────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                   Presentation Layer                        │
+│              (ShatranjCMD with DI setup)                    │
+└─────────────────────────────────────────────────────────────┘
+                            │
+        ┌───────────────────┴──────────────────┐
+        │                                      │
+        ↓                                      ↓
+┌─────────────────────┐            ┌──────────────────────┐
+│    AI Layer         │            │  Game Logic Layer    │
+│   (ShatranjAI)      │            │   (ShatranjCore)     │
+│  - BasicAI          │            │  - ChessGame         │
+│  - MoveEvaluator    │            │  - Validators        │
+│                     │            │  - Movement          │
+└─────────────────────┘            └──────────────────────┘
+        │                                      │
+        └───────────────────┬──────────────────┘
+                            │
+                            ↓
+┌─────────────────────────────────────────────────────────────┐
+│                 Abstractions Layer                          │
+│            (ShatranjCore.Abstractions)                      │
+│  - IBoardState (minimal board interface)                   │
+│  - IChessAI (AI interface)                                 │
+│  - ILogger (logging interface)                             │
+│  - Core Types (Location, PieceColor, GameMode)             │
+│  NO DEPENDENCIES - Pure interfaces and types               │
+└─────────────────────────────────────────────────────────────┘
+                            │
+                            ↓
+┌─────────────────────────────────────────────────────────────┐
+│                   Domain Model Layer                        │
+│  - Pieces (King, Queen, Rook, Bishop, Knight, Pawn)        │
+│  - Board (ChessBoard implements IChessBoard + IBoardState)  │
+│  - IChessBoard (extends IBoardState with Piece types)      │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ### Design Principles
@@ -65,81 +73,285 @@ Shatranj follows a **Layered Architecture** with clear separation of concerns:
 
 ---
 
-## Modular Structure
+## Project Structure
 
-### ShatranjCore Library Organization
+### Complete Solution Organization
 
 ```
-ShatranjCore/
-├── Models.cs                    # Base types & enums (root namespace)
-├── Pieces/                      # ♟️ Piece implementations
-│   ├── Piece.cs                 # Abstract base class
-│   ├── Pawn.cs                  # Most complex piece
-│   ├── Rook.cs                  # Castling support
-│   ├── Knight.cs                # Jump ability
-│   ├── Bishop.cs                # Diagonal movement
-│   ├── Queen.cs                 # Combined movement
-│   └── King.cs                  # Castling + restricted movement
+Shatranj/
+├── ShatranjCore.Abstractions/   # 🔷 Core abstractions (NO DEPENDENCIES)
+│   ├── CoreTypes.cs              # Location, PieceColor, GameMode, PlayerType
+│   ├── IBoardState.cs            # Minimal board interface (object-based)
+│   ├── IChessAI.cs               # AI interface
+│   └── ILogger.cs                # Logging interface
 │
-├── Board/                       # 🎲 Board representation
-│   ├── ChessBoard.cs            # 8x8 array, implements IChessBoard
-│   └── Square.cs                # Individual square state
+├── ShatranjCore/                 # 🎮 Core game engine
+│   ├── Models.cs                 # Type aliases for backward compatibility
+│   ├── Pieces/                   # ♟️ Piece implementations
+│   │   ├── Piece.cs              # Abstract base class
+│   │   ├── Pawn.cs               # Most complex piece
+│   │   ├── Rook.cs               # Castling support
+│   │   ├── Knight.cs             # Jump ability
+│   │   ├── Bishop.cs             # Diagonal movement
+│   │   ├── Queen.cs              # Combined movement
+│   │   └── King.cs               # Castling + restricted movement
+│   │
+│   ├── Board/                    # 🎲 Board representation
+│   │   ├── ChessBoard.cs         # 8x8 array, implements IChessBoard + IBoardState
+│   │   └── Square.cs             # Individual square state
+│   │
+│   ├── Interfaces/               # 📋 Game interfaces
+│   │   └── IChessBoard.cs        # Extends IBoardState with Piece types
+│   │
+│   ├── Game/                     # 🎮 Game orchestration
+│   │   ├── ChessGame.cs          # Original simple implementation
+│   │   ├── EnhancedChessGame.cs  # Refactored with all features
+│   │   └── Player.cs             # Player state & turn management
+│   │
+│   ├── Movement/                 # 🔄 Move handling
+│   │   ├── MoveMaker.cs          # Executes moves
+│   │   └── MoveHistory.cs        # Tracks game history
+│   │
+│   ├── Validators/               # ✅ Rule validation
+│   │   ├── CastlingValidator.cs  # Castling rules
+│   │   ├── CheckDetector.cs      # Check/checkmate/stalemate
+│   │   └── EnPassantTracker.cs   # En passant state
+│   │
+│   ├── UI/                       # 🖥️ User interaction
+│   │   ├── ConsoleBoardRenderer.cs # ASCII/Unicode board display
+│   │   └── CommandParser.cs      # Input parsing (e2-e4 format)
+│   │
+│   ├── Handlers/                 # 🎯 Special move handlers
+│   │   └── PawnPromotionHandler.cs # Promotion logic
+│   │
+│   ├── Logging/                  # 📝 Logging implementations
+│   │   └── FileLogger.cs         # File-based logging
+│   │
+│   ├── Persistence/              # 💾 Save/load functionality
+│   │   ├── GamePersistence.cs    # Save/load game state
+│   │   └── GameSnapshot.cs       # Serializable game state
+│   │
+│   ├── Learning/                 # 🧠 Game recording
+│   │   └── GameRecorder.cs       # Record games for AI training
+│   │
+│   └── Utilities/                # 🛠️ Helpers
+│       ├── Utilities.cs          # General utilities
+│       └── PieceSet.cs           # Piece collection management
 │
-├── Interfaces/                  # 📋 Abstractions
-│   └── IChessBoard.cs           # Board contract for DI
+├── ShatranjAI/                   # 🤖 AI implementation
+│   └── AI/
+│       ├── BasicAI.cs            # Minimax with alpha-beta pruning
+│       └── MoveEvaluator.cs      # Position evaluation
 │
-├── Game/                        # 🎮 Game orchestration
-│   ├── ChessGame.cs             # Original simple implementation
-│   ├── EnhancedChessGame.cs    # Refactored with all features
-│   └── Player.cs                # Player state & turn management
+├── ShatranjCMD/                  # 💻 Console application
+│   └── Program.cs                # Entry point with DI setup
 │
-├── Movement/                    # 🔄 Move handling
-│   ├── MoveMaker.cs             # Executes moves
-│   └── MoveHistory.cs           # Tracks game history
-│
-├── Validators/                  # ✅ Rule validation
-│   ├── CastlingValidator.cs     # Castling rules
-│   ├── CheckDetector.cs         # Check/checkmate/stalemate
-│   └── EnPassantTracker.cs      # En passant state
-│
-├── UI/                          # 🖥️ User interaction
-│   ├── ConsoleBoardRenderer.cs  # ASCII/Unicode board display
-│   └── CommandParser.cs         # Input parsing (e2-e4 format)
-│
-├── Handlers/                    # 🎯 Special move handlers
-│   └── PawnPromotionHandler.cs  # Promotion logic
-│
-└── Utilities/                   # 🛠️ Helpers
-    ├── Utilities.cs             # General utilities
-    └── PieceSet.cs              # Piece collection management
+└── tests/                        # 🧪 Test projects
+    ├── ShatranjCore.Tests/       # Core unit tests (40+ tests)
+    ├── ShatranjAI.Tests/         # AI unit tests (6 tests)
+    └── ShatranjIntegration.Tests/ # Integration tests (6 tests)
 ```
 
 ### Namespace Strategy
 
+**Abstractions Namespace** (`ShatranjCore.Abstractions`)
+- **Pure interfaces and types** - NO dependencies on any other project
+- Core types: `Location`, `PieceColor`, `GameMode`, `PlayerType`, `PawnMoves`
+- Interfaces: `IBoardState`, `IChessAI`, `ILogger`
+- Purpose: Enable dependency inversion without circular references
+
 **Root Namespace** (`ShatranjCore`)
-- Contains only `Models.cs` with base types used across all modules:
-  - `PieceColor` enum (White, Black)
-  - `PawnMoves` enum (Up, Down)
-  - `Location` struct (row, column)
-  - `Move` struct (From, To)
-  - `PlayerType` enum (Human, AI)
+- Contains `Models.cs` with type aliases for backward compatibility
+- Forwards to types in `ShatranjCore.Abstractions`
 
 **Module Namespaces** (Suffix pattern)
 - `ShatranjCore.Pieces` - All piece classes
 - `ShatranjCore.Board` - Board and square
-- `ShatranjCore.Interfaces` - IChessBoard
+- `ShatranjCore.Interfaces` - IChessBoard (extends IBoardState)
 - `ShatranjCore.Game` - Game logic
 - `ShatranjCore.Movement` - Move execution
 - `ShatranjCore.Validators` - Validation rules
 - `ShatranjCore.UI` - User interface
 - `ShatranjCore.Handlers` - Special handlers
+- `ShatranjCore.Logging` - Logging implementations
+- `ShatranjCore.Persistence` - Save/load functionality
+- `ShatranjCore.Learning` - Game recording
 - `ShatranjCore.Utilities` - Utilities
 
+**AI Namespace** (`ShatranjAI.AI`)
+- AI implementations that depend only on Abstractions
+- Can evaluate board state through IBoardState interface
+
 **Benefits**:
+- **No Circular Dependencies**: Abstractions layer breaks dependency cycles
 - **Clear Organization**: Related classes are grouped together
 - **Reduced Coupling**: Each module has minimal dependencies
-- **Easy Navigation**: Find functionality by category
+- **Easy Testing**: Mock implementations through interfaces
 - **Scalability**: New modules can be added without conflicts
+
+---
+
+## Abstractions Layer
+
+### Purpose and Design
+
+The **ShatranjCore.Abstractions** project is a critical architectural component that enables **dependency inversion** without creating circular dependencies.
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│          ShatranjCore.Abstractions                          │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  IBoardState (minimal board interface)             │   │
+│  │  - Uses 'object' instead of 'Piece'                │   │
+│  │  - Enables AI to work with board without           │   │
+│  │    depending on ShatranjCore                       │   │
+│  └─────────────────────────────────────────────────────┘   │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  IChessAI                                           │   │
+│  │  - Depends on IBoardState (not IChessBoard)        │   │
+│  │  - Can be implemented without circular deps        │   │
+│  └─────────────────────────────────────────────────────┘   │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  Core Types (Location, PieceColor, GameMode)       │   │
+│  │  - Shared across all projects                      │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                             │
+│  NO DEPENDENCIES - Pure interfaces and value types         │
+└─────────────────────────────────────────────────────────────┘
+                    ↑                    ↑
+                    │                    │
+        ┌───────────┴─────┐    ┌────────┴─────────┐
+        │  ShatranjCore   │    │   ShatranjAI     │
+        │  (implements)   │    │   (consumes)     │
+        └─────────────────┘    └──────────────────┘
+```
+
+### IBoardState Interface
+
+The key abstraction that breaks circular dependencies:
+
+```csharp
+namespace ShatranjCore.Abstractions
+{
+    /// <summary>
+    /// Minimal board state interface for AI evaluation.
+    /// Uses object for pieces to avoid circular dependencies.
+    /// </summary>
+    public interface IBoardState
+    {
+        object GetPiece(Location location);
+        bool IsEmptyAt(int row, int column);
+        List<object> GetPiecesOfColor(PieceColor color);
+        List<object> GetOpponentPieces(PieceColor color);
+        void PlacePiece(object piece, Location location);
+        object RemovePiece(Location location);
+        object FindKing(PieceColor color);
+        bool IsInBounds(int row, int column);
+        bool IsInBounds(Location location);
+    }
+}
+```
+
+**Why `object` instead of `Piece`?**
+- `Piece` is defined in ShatranjCore
+- If IBoardState used `Piece`, Abstractions would depend on ShatranjCore
+- This would create a circular dependency: ShatranjCore → Abstractions → ShatranjCore ❌
+- Using `object` keeps Abstractions independent ✅
+
+### IChessBoard Extends IBoardState
+
+The full board interface in ShatranjCore adds type safety:
+
+```csharp
+namespace ShatranjCore.Interfaces
+{
+    /// <summary>
+    /// Full chess board interface with strongly-typed Piece methods.
+    /// Extends IBoardState for AI compatibility.
+    /// </summary>
+    public interface IChessBoard : IBoardState
+    {
+        // Strongly-typed versions (hides IBoardState methods)
+        new Piece GetPiece(Location location);
+        new List<Piece> GetPiecesOfColor(PieceColor color);
+        new List<Piece> GetOpponentPieces(PieceColor color);
+        void PlacePiece(Piece piece, Location location);  // Different signature
+        new Piece RemovePiece(Location location);
+        new King FindKing(PieceColor color);
+    }
+}
+```
+
+**The `new` keyword:**
+- Hides the base interface method with a more specific version
+- When accessed as `IChessBoard` → returns `Piece`
+- When accessed as `IBoardState` → returns `object`
+
+### ChessBoard Implementation
+
+ChessBoard implements both interfaces using **explicit interface implementation**:
+
+```csharp
+public class ChessBoard : IChessBoard
+{
+    // Public strongly-typed methods (for IChessBoard)
+    public Piece GetPiece(Location location)
+    {
+        return squares[location.Row, location.Column].Piece;
+    }
+
+    public List<Piece> GetPiecesOfColor(PieceColor color)
+    {
+        int index = (color == PieceColor.Black) ? 0 : 1;
+        return boardSet[index].Pieces.Where(p => p != null).ToList();
+    }
+
+    // Explicit IBoardState implementation (only accessible when cast to IBoardState)
+    object IBoardState.GetPiece(Location location)
+    {
+        return GetPiece(location);  // Calls the public method
+    }
+
+    List<object> IBoardState.GetPiecesOfColor(PieceColor color)
+    {
+        return GetPiecesOfColor(color).Cast<object>().ToList();
+    }
+
+    // ... other explicit implementations
+}
+```
+
+**How it works:**
+1. **Normal usage** (game logic): Uses `IChessBoard` → gets `Piece` objects
+2. **AI usage**: Uses `IBoardState` → gets `object` (cast internally to Piece)
+3. **No circular dependency**: AI depends only on Abstractions, not ShatranjCore
+
+### Dependency Flow
+
+```
+Clean dependency flow (no cycles):
+
+ShatranjCore.Abstractions
+    ↑               ↑
+    │               │
+    │               └─────── ShatranjAI (depends on Abstractions only)
+    │                            ↑
+    │                            │
+    └─── ShatranjCore ───────────┘ (depends on both)
+            ↑
+            │
+        ShatranjCMD (depends on all)
+```
+
+**Before Abstractions Layer:**
+- ShatranjAI needed IChessBoard
+- IChessBoard is in ShatranjCore
+- Circular dependency: AI → Core → AI ❌
+
+**After Abstractions Layer:**
+- ShatranjAI needs only IBoardState
+- IBoardState is in Abstractions (no dependencies)
+- No circular dependency ✅
 
 ---
 
@@ -193,43 +405,71 @@ namespace ShatranjCore.Pieces
    - Important for pawn (2-square first move)
    - Set to true after first move
 
-### 2. Board Abstraction (IChessBoard)
+### 2. Board Abstraction (IBoardState + IChessBoard)
 
+#### Two-Level Board Abstraction
+
+The board is abstracted through two interfaces:
+
+**Level 1: IBoardState (in Abstractions)**
 ```csharp
-namespace ShatranjCore.Interfaces
+namespace ShatranjCore.Abstractions
 {
-    public interface IChessBoard
+    public interface IBoardState
     {
-        // Piece queries
-        Piece GetPiece(Location location);
+        // Type-agnostic methods (uses object)
+        object GetPiece(Location location);
         bool IsEmptyAt(int row, int column);
         bool IsInBounds(int row, int column);
-
-        // Piece manipulation
-        void PlacePiece(Piece piece, Location location);
-        void RemovePiece(Location location);
-
-        // Game state
-        Location? FindKing(PieceColor color);
-        List<Piece> GetAllPieces(PieceColor? color = null);
+        List<object> GetPiecesOfColor(PieceColor color);
+        List<object> GetOpponentPieces(PieceColor color);
+        void PlacePiece(object piece, Location location);
+        object RemovePiece(Location location);
+        object FindKing(PieceColor color);
     }
 }
 ```
 
-**Why an interface?**
+**Level 2: IChessBoard (in ShatranjCore.Interfaces)**
+```csharp
+namespace ShatranjCore.Interfaces
+{
+    public interface IChessBoard : IBoardState
+    {
+        // Strongly-typed methods (uses Piece)
+        new Piece GetPiece(Location location);
+        new List<Piece> GetPiecesOfColor(PieceColor color);
+        new List<Piece> GetOpponentPieces(PieceColor color);
+        void PlacePiece(Piece piece, Location location);  // Different signature
+        new Piece RemovePiece(Location location);
+        new King FindKing(PieceColor color);
+        // Inherits: IsEmptyAt, IsInBounds from IBoardState
+    }
+}
+```
 
-1. **Dependency Inversion Principle**
-   - Pieces depend on `IChessBoard`, not concrete `ChessBoard`
+**Why two interfaces?**
+
+1. **Break Circular Dependencies**
+   - AI can depend on `IBoardState` (in Abstractions) without depending on ShatranjCore
+   - Enables clean layered architecture
+
+2. **Type Safety Where Needed**
+   - Game logic uses `IChessBoard` → strongly-typed `Piece` objects
+   - AI uses `IBoardState` → flexible `object` (cast internally)
+
+3. **Dependency Inversion Principle**
+   - High-level modules depend on abstractions
    - Future: Could implement `BitBoard`, `MailboxBoard`, etc.
    - Testability: Can create mock boards for testing
 
-2. **Encapsulation**
-   - Board implementation details hidden from pieces
-   - Can change internal representation without affecting pieces
+4. **Encapsulation**
+   - Board implementation details hidden from consumers
+   - Can change internal representation without affecting pieces or AI
 
-3. **Flexibility**
+5. **Flexibility**
    - Different board types for different scenarios:
-     - `ChessBoard` - Standard 8x8 array
+     - `ChessBoard` - Standard 8x8 array (implements both interfaces)
      - `TestBoard` - Minimal board for unit tests
      - `BitBoard` - Future optimization using bitwise operations
 
@@ -850,19 +1090,119 @@ public class ChessController : Controller
 
 ## Testing Strategy
 
-### Unit Tests (Current)
-- **Piece Movement**: Each piece has 5-9 tests
+### Three-Tier Test Architecture
+
+The project follows a comprehensive testing pyramid with three distinct test projects:
+
+```
+                    ┌──────────────────────────┐
+                    │   Integration Tests      │  (6 tests)
+                    │   Full game scenarios    │
+                    └──────────────────────────┘
+                            ↑
+                ┌───────────┴───────────┐
+                │      AI Tests         │  (6 tests)
+                │   AI-specific tests   │
+                └───────────────────────┘
+                        ↑
+            ┌───────────┴───────────┐
+            │    Core Tests         │  (40+ tests)
+            │  Foundation tests     │
+            └───────────────────────┘
+```
+
+### 1. ShatranjCore.Tests (40+ tests)
+
+**Purpose:** Unit tests for core game logic
+
+**Test Coverage:**
+- **Piece Movement** (28 tests): Each piece has 5-9 tests
+  - Pawn: Basic moves, double move, captures, en passant
+  - Rook: Horizontal/vertical movement, blocking
+  - Bishop: Diagonal movement, blocking
+  - Knight: L-shaped moves, jumping
+  - Queen: Combined movement
+  - King: Single square movement, check detection
 - **Edge Cases**: Board boundaries, blocking, captures
-- **Special Moves**: Castling, en passant, promotion
+- **Special Moves**: Castling (6 tests), en passant (2 tests), promotion (2 tests)
+- **Check Detection** (4 tests): Check, checkmate, stalemate
+- **Move Validation** (6+ tests): Legal move filtering
 
-### Integration Tests (Future)
-- Full game scenarios (e.g., Scholar's Mate in 4 moves)
-- Check/checkmate combinations
-- Stalemate scenarios
+**Run Command:**
+```bash
+cd tests/ShatranjCore.Tests
+dotnet run
+```
 
-### Performance Tests (Future)
+### 2. ShatranjAI.Tests (6 tests)
+
+**Purpose:** Unit tests for AI components
+
+**Test Coverage:**
+- **BasicAI Tests** (3 tests):
+  - AI can select valid moves
+  - AI makes legal moves
+  - AI respects game rules
+- **MoveEvaluator Tests** (3 tests):
+  - Position evaluation accuracy
+  - Material counting
+  - Piece-square table application
+
+**Run Command:**
+```bash
+cd ShatranjAI.Tests
+dotnet run
+```
+
+### 3. ShatranjIntegration.Tests (6 tests)
+
+**Purpose:** Integration tests for complete game scenarios
+
+**Test Coverage:**
+- **AI Integration** (3 tests):
+  - AI can play a full game
+  - AI makes only valid moves throughout game
+  - AI logging integration works
+- **Game Flow** (3 tests):
+  - Check detection in real game
+  - Castling in real game
+  - En passant in real game
+
+**Run Command:**
+```bash
+cd tests/ShatranjIntegration.Tests
+dotnet run
+```
+
+### Test Isolation and Dependencies
+
+**Dependency Graph:**
+```
+ShatranjIntegration.Tests
+    ├── → ShatranjCore.Abstractions
+    ├── → ShatranjCore
+    └── → ShatranjAI
+
+ShatranjAI.Tests
+    ├── → ShatranjCore.Abstractions
+    └── → ShatranjAI
+
+ShatranjCore.Tests
+    ├── → ShatranjCore.Abstractions
+    └── → ShatranjCore
+```
+
+**Benefits:**
+- **Clear separation**: Unit tests don't depend on AI, AI tests don't depend on integration
+- **Fast feedback**: Core tests run quickly without AI overhead
+- **Comprehensive coverage**: Integration tests verify complete scenarios
+- **Easy debugging**: Failures isolated to specific layers
+
+### Performance Tests (Future - Phase 3)
 - Benchmark move generation (target: <1ms for full board)
 - AI search depth (target: depth 6 in <3 seconds)
+- Position evaluation speed (target: 100k positions/second)
+- Memory profiling for long games
 
 ---
 
@@ -881,4 +1221,5 @@ This architecture allows the project to grow from a simple command-line game to 
 
 **Last Updated**: November 2025
 **Maintained by**: Mohammed Azmat
-**Architecture Status**: Phase 1 Complete ✅
+**Architecture Status**: Phase 2 - AI Integration (85% Complete) ✅
+**Key Achievement**: Clean layered architecture with zero circular dependencies through Abstractions layer

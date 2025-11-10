@@ -16,9 +16,6 @@ namespace ShatranjCore.Tests
             Console.WriteLine("╚════════════════════════════════════════════════════════════════╝");
             Console.WriteLine();
 
-            int totalTests = 0;
-            int passedTests = 0;
-
             // Run comprehensive all pieces movement test first
             AllPiecesMovementTest.RunTest();
             Console.WriteLine();

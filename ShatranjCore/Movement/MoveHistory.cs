@@ -1,4 +1,5 @@
 using System;
+using ShatranjCore.Abstractions;
 using System.Collections.Generic;
 using System.Linq;
 using ShatranjCore.Board;
@@ -48,6 +49,14 @@ namespace ShatranjCore.Movement
         public List<MoveRecord> GetAllMoves()
         {
             return new List<MoveRecord>(moves);
+        }
+
+        /// <summary>
+        /// Gets all moves in the game (alias for GetAllMoves).
+        /// </summary>
+        public List<MoveRecord> GetMoves()
+        {
+            return GetAllMoves();
         }
 
         /// <summary>
