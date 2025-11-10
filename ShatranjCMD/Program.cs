@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ShatranjCore;
 using ShatranjCore.Game;
+using ShatranjCore.UI;
 
 namespace ShatranjCMD
 {
@@ -25,11 +27,34 @@ namespace ShatranjCMD
             Console.WriteLine();
             Console.WriteLine("Welcome to Shatranj - A chess game built with SOLID principles!");
             Console.WriteLine();
-            Console.WriteLine("Press any key to start a new game...");
+            Console.WriteLine("Press any key to continue...");
             Console.ReadKey();
 
-            // Start the enhanced chess game
-            EnhancedChessGame game = new EnhancedChessGame();
+            // Show game mode menu
+            GameMenuHandler menuHandler = new GameMenuHandler();
+            GameMode selectedMode = menuHandler.ShowGameModeMenu();
+
+            // If AI mode selected, show "not implemented" message and default to Human vs Human
+            PieceColor humanColor = PieceColor.White;
+            if (selectedMode == GameMode.HumanVsAI)
+            {
+                menuHandler.ShowFeatureNotImplemented("Human vs AI");
+                selectedMode = menuHandler.ShowGameModeMenu(); // Show menu again
+
+                // If user selected AI mode again after warning, get color preference
+                if (selectedMode == GameMode.HumanVsAI)
+                {
+                    humanColor = menuHandler.ShowColorSelectionMenu();
+                }
+            }
+            else if (selectedMode == GameMode.AIVsAI)
+            {
+                menuHandler.ShowFeatureNotImplemented("AI vs AI");
+                selectedMode = menuHandler.ShowGameModeMenu(); // Show menu again
+            }
+
+            // Start the chess game with selected mode
+            ChessGame game = new ChessGame(selectedMode, humanColor);
             game.Start();
 
             Console.WriteLine();

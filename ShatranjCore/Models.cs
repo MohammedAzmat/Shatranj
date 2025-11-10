@@ -74,4 +74,14 @@ namespace ShatranjCore
         Human,
         AI
     }
+
+    /// <summary>
+    /// Enum representing game mode
+    /// </summary>
+    public enum GameMode
+    {
+        HumanVsHuman,
+        HumanVsAI,
+        AIVsAI
+    }
 }

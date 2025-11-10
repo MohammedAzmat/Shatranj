@@ -12,10 +12,10 @@ using ShatranjCore.Validators;
 namespace ShatranjCore.Game
 {
     /// <summary>
-    /// Enhanced Chess Game with improved terminal UI and command system.
+    /// Chess Game with terminal UI and command system.
     /// Follows SOLID principles with dependency injection and separation of concerns.
     /// </summary>
-    public class EnhancedChessGame
+    public class ChessGame
     {
         private readonly IChessBoard board;
         private readonly ConsoleBoardRenderer renderer;
@@ -31,8 +31,10 @@ namespace ShatranjCore.Game
         private PieceColor currentPlayer;
         private GameResult gameResult;
         private bool isRunning;
+        private GameMode gameMode;
+        private PieceColor humanColor;
 
-        public EnhancedChessGame()
+        public ChessGame(GameMode mode = GameMode.HumanVsHuman, PieceColor humanPlayerColor = PieceColor.White)
         {
             board = new ChessBoard(PieceColor.White);
             renderer = new ConsoleBoardRenderer();
@@ -44,6 +46,8 @@ namespace ShatranjCore.Game
             enPassantTracker = new EnPassantTracker();
             capturedPieces = new List<Piece>();
             gameResult = GameResult.InProgress;
+            gameMode = mode;
+            humanColor = humanPlayerColor;
         }
 
         /// <summary>
@@ -67,12 +71,39 @@ namespace ShatranjCore.Game
             moveHistory.Clear();
             enPassantTracker.Reset();
 
-            // Initialize players
+            // Initialize players based on game mode
             players = new Player[2];
-            players[0] = new Player(PieceColor.White, PlayerType.Human) { HasTurn = true };
-            players[1] = new Player(PieceColor.Black, PlayerType.Human) { HasTurn = false };
 
-            renderer.DisplayInfo("New game started! White moves first.");
+            switch (gameMode)
+            {
+                case GameMode.HumanVsHuman:
+                    players[0] = new Player(PieceColor.White, PlayerType.Human) { HasTurn = true };
+                    players[1] = new Player(PieceColor.Black, PlayerType.Human) { HasTurn = false };
+                    renderer.DisplayInfo("New game started! White moves first.");
+                    break;
+
+                case GameMode.HumanVsAI:
+                    // Set up human and AI based on chosen color
+                    if (humanColor == PieceColor.White)
+                    {
+                        players[0] = new Player(PieceColor.White, PlayerType.Human) { HasTurn = true };
+                        players[1] = new Player(PieceColor.Black, PlayerType.AI) { HasTurn = false };
+                        renderer.DisplayInfo("New game started! You are White. You move first.");
+                    }
+                    else
+                    {
+                        players[0] = new Player(PieceColor.White, PlayerType.AI) { HasTurn = true };
+                        players[1] = new Player(PieceColor.Black, PlayerType.Human) { HasTurn = false };
+                        renderer.DisplayInfo("New game started! You are Black. AI moves first.");
+                    }
+                    break;
+
+                case GameMode.AIVsAI:
+                    players[0] = new Player(PieceColor.White, PlayerType.AI) { HasTurn = true };
+                    players[1] = new Player(PieceColor.Black, PlayerType.AI) { HasTurn = false };
+                    renderer.DisplayInfo("New game started! AI vs AI. White AI moves first.");
+                    break;
+            }
         }
 
         /// <summary>
