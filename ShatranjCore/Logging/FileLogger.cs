@@ -36,6 +36,7 @@ namespace ShatranjCore.Logging
             }
         }
 
+        public void Trace(string message) => Log(LogLevel.Trace, message);
         public void Debug(string message) => Log(LogLevel.Debug, message);
         public void Info(string message) => Log(LogLevel.Info, message);
         public void Warning(string message) => Log(LogLevel.Warning, message);
@@ -44,6 +45,11 @@ namespace ShatranjCore.Logging
         public void Error(string message, Exception ex)
         {
             Log(LogLevel.Error, $"{message}\nException: {ex.GetType().Name}: {ex.Message}\nStack Trace: {ex.StackTrace}");
+        }
+
+        public void Critical(string message, Exception ex)
+        {
+            Log(LogLevel.Critical, $"{message}\nException: {ex.GetType().Name}: {ex.Message}\nStack Trace: {ex.StackTrace}");
         }
 
         public void Log(LogLevel level, string message)
