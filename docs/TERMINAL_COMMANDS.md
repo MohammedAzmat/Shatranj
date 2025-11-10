@@ -83,7 +83,11 @@ Control the game flow.
 | `game start` | Start a new game | ✓ Implemented |
 | `game restart` | Restart the current game | ✓ Implemented |
 | `game end` | End the current game | ✓ Implemented |
-| `game save` | Save game to file | ⚠ Coming soon |
+| `game save [name]` | Save game to file | ✓ Implemented |
+| `game load [name]` | Load game from file | ✓ Implemented |
+| `undo` | Undo last move | ✓ Implemented |
+| `redo` | Redo undone move | ✓ Implemented |
+| `settings` | Open settings menu | ✓ Implemented |
 
 **Examples**:
 ```
@@ -290,21 +294,28 @@ Currently no keyboard shortcuts - all input is command-based. Future versions ma
 | "Illegal move for [piece]" | Invalid move for piece type | Use `help [location]` to see legal moves |
 | "Invalid location format" | Bad algebraic notation | Use format like `e2`, `d4` |
 
-## Future Features (Coming Soon)
+## Implemented Features ✅
 
-- ✓ Command-line interface with colored output
-- ✓ Move validation
-- ✓ Capture detection
-- ⚠ Check detection (Phase 1)
-- ⚠ Checkmate detection (Phase 1)
-- ⚠ Special moves: castling, en passant, pawn promotion (Phase 1)
-- ⚠ Save/load games (Phase 1)
-- ⚠ AI opponent (Phase 2)
-- ⚠ Difficulty levels (Phase 3)
-- ⚠ Online multiplayer (Phase 4)
-- ⚠ Graphical UI (Phase 5)
+- ✅ Command-line interface with colored output
+- ✅ Move validation with legal move checking
+- ✅ Capture detection
+- ✅ Check detection
+- ✅ Checkmate detection
+- ✅ Stalemate detection
+- ✅ Special moves: castling, en passant, pawn promotion
+- ✅ Save/load games with undo/redo
+- ✅ AI opponent (minimax with alpha-beta pruning)
+- ✅ Multiple game modes (Human vs Human, Human vs AI, AI vs AI)
+
+## Future Features (Planned)
+
+- ⚪ AI difficulty levels (Phase 3)
+- ⚪ AI learning from game history (Phase 3)
+- ⚪ Opening book (Phase 3)
+- ⚪ Online multiplayer (Phase 4)
+- ⚪ Graphical UI (Phase 5)
 
 ---
 
-**Last Updated**: 2025-11-05
-**Version**: Phase 1 (In Development)
+**Last Updated**: 2025-11-10
+**Version**: Phase 2 Complete ✅
