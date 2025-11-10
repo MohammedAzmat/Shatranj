@@ -11,6 +11,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\ShatranjCore.Abstractions\ShatranjCore.Abstractions.csproj" />
     <ProjectReference Include="..\..\ShatranjCore\ShatranjCore.csproj" />
+    <ProjectReference Include="..\..\ShatranjAI\ShatranjAI.csproj" />
   </ItemGroup>
 
 </Project>
