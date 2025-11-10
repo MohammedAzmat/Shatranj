@@ -50,7 +50,7 @@ namespace ShatranjCore.Abstractions
         /// <param name="color">The color to move</param>
         /// <param name="enPassantTarget">Current en passant target square, if any</param>
         /// <returns>The selected move with evaluation</returns>
-        AIMove SelectMove(IChessBoard board, PieceColor color, Location? enPassantTarget);
+        AIMove SelectMove(IBoardState board, PieceColor color, Location? enPassantTarget);
 
         /// <summary>
         /// Evaluates the current board position from the perspective of the given color
@@ -58,6 +58,6 @@ namespace ShatranjCore.Abstractions
         /// <param name="board">The board to evaluate</param>
         /// <param name="color">The color to evaluate for (positive = good for this color)</param>
         /// <returns>Evaluation score</returns>
-        double EvaluatePosition(IChessBoard board, PieceColor color);
+        double EvaluatePosition(IBoardState board, PieceColor color);
     }
 }
