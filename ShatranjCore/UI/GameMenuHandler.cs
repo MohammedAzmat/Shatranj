@@ -22,8 +22,8 @@ namespace ShatranjCore.UI
             Console.WriteLine("Please select a game mode:");
             Console.WriteLine();
             Console.WriteLine("  [1] Human vs Human    - Two players on the same computer");
-            Console.WriteLine("  [2] Human vs AI       - Play against the computer (Coming Soon)");
-            Console.WriteLine("  [3] AI vs AI          - Watch two AIs play (Coming Soon)");
+            Console.WriteLine("  [2] Human vs AI       - Play against BasicAI (Minimax depth-3)");
+            Console.WriteLine("  [3] AI vs AI          - Watch two AIs compete");
             Console.WriteLine();
             Console.WriteLine("Press ESC to exit");
             Console.WriteLine();

@@ -34,23 +34,11 @@ namespace ShatranjCMD
             GameMenuHandler menuHandler = new GameMenuHandler();
             GameMode selectedMode = menuHandler.ShowGameModeMenu();
 
-            // If AI mode selected, show "not implemented" message and default to Human vs Human
+            // Get color preference for Human vs AI mode
             PieceColor humanColor = PieceColor.White;
             if (selectedMode == GameMode.HumanVsAI)
             {
-                menuHandler.ShowFeatureNotImplemented("Human vs AI");
-                selectedMode = menuHandler.ShowGameModeMenu(); // Show menu again
-
-                // If user selected AI mode again after warning, get color preference
-                if (selectedMode == GameMode.HumanVsAI)
-                {
-                    humanColor = menuHandler.ShowColorSelectionMenu();
-                }
-            }
-            else if (selectedMode == GameMode.AIVsAI)
-            {
-                menuHandler.ShowFeatureNotImplemented("AI vs AI");
-                selectedMode = menuHandler.ShowGameModeMenu(); // Show menu again
+                humanColor = menuHandler.ShowColorSelectionMenu();
             }
 
             // Start the chess game with selected mode
