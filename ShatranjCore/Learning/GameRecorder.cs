@@ -5,9 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using ShatranjCore;
+using ShatranjCore.Abstractions;
 using ShatranjCore.Logging;
 
-namespace ShatranjAI.Learning
+namespace ShatranjCore.Learning
 {
     /// <summary>
     /// Records games for AI learning and analysis

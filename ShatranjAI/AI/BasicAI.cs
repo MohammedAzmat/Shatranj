@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using ShatranjCore;
+using ShatranjCore.Abstractions;
 using ShatranjCore.Board;
 using ShatranjCore.Interfaces;
 using ShatranjCore.Logging;

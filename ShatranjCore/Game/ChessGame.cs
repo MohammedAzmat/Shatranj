@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using ShatranjAI.AI;
-using ShatranjAI.Learning;
+using ShatranjCore.Abstractions;
 using ShatranjCore.Board;
 using ShatranjCore.Handlers;
 using ShatranjCore.Interfaces;
+using ShatranjCore.Learning;
 using ShatranjCore.Logging;
 using ShatranjCore.Movement;
 using ShatranjCore.Persistence;
@@ -46,7 +46,11 @@ namespace ShatranjCore.Game
         private readonly GameRecorder recorder;
         private readonly GameSerializer serializer;
 
-        public ChessGame(GameMode mode = GameMode.HumanVsHuman, PieceColor humanPlayerColor = PieceColor.White)
+        public ChessGame(
+            GameMode mode = GameMode.HumanVsHuman,
+            PieceColor humanPlayerColor = PieceColor.White,
+            IChessAI whiteAI = null,
+            IChessAI blackAI = null)
         {
             board = new ChessBoard(PieceColor.White);
             renderer = new ConsoleBoardRenderer();
@@ -69,25 +73,24 @@ namespace ShatranjCore.Game
             recorder = new GameRecorder(logger);
             serializer = new GameSerializer(logger);
 
-            // Initialize AI based on game mode
+            // Set AI instances from constructor parameters
+            this.whiteAI = whiteAI;
+            this.blackAI = blackAI;
+
+            // Log game mode
             if (mode == GameMode.HumanVsAI)
             {
-                IChessAI ai = new BasicAI(depth: 3, logger);
                 if (humanPlayerColor == PieceColor.White)
                 {
-                    blackAI = ai;
                     logger.Info("Game mode: Human (White) vs AI (Black)");
                 }
                 else
                 {
-                    whiteAI = ai;
                     logger.Info("Game mode: AI (White) vs Human (Black)");
                 }
             }
             else if (mode == GameMode.AIVsAI)
             {
-                whiteAI = new BasicAI(depth: 3, logger);
-                blackAI = new BasicAI(depth: 3, logger);
                 logger.Info("Game mode: AI vs AI");
             }
             else

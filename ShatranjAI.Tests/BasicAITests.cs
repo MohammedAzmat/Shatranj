@@ -1,6 +1,7 @@
 using System;
 using ShatranjAI.AI;
 using ShatranjCore;
+using ShatranjCore.Abstractions;
 using ShatranjCore.Board;
 using ShatranjCore.Pieces;
 

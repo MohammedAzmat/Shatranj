@@ -1,12 +1,12 @@
 using System.Collections.Generic;
-using ShatranjCore.Abstractions;
-using ShatranjCore.Pieces;
 
-namespace ShatranjCore.Interfaces
+namespace ShatranjCore.Abstractions
 {
     /// <summary>
     /// Interface for chess board implementations.
     /// Follows Dependency Inversion Principle - depend on abstractions, not concretions.
+    /// Note: This interface uses object types for pieces to avoid circular dependencies.
+    /// The actual implementation will use concrete Piece types.
     /// </summary>
     public interface IChessBoard
     {
@@ -15,7 +15,7 @@ namespace ShatranjCore.Interfaces
         /// </summary>
         /// <param name="location">The location to check</param>
         /// <returns>The piece at that location, or null if empty</returns>
-        Piece GetPiece(Location location);
+        object GetPiece(Location location);
 
         /// <summary>
         /// Checks if a square at the given position is empty.
@@ -30,35 +30,35 @@ namespace ShatranjCore.Interfaces
         /// </summary>
         /// <param name="color">The piece color to filter by</param>
         /// <returns>List of pieces of the specified color</returns>
-        List<Piece> GetPiecesOfColor(PieceColor color);
+        List<object> GetPiecesOfColor(PieceColor color);
 
         /// <summary>
         /// Gets all opponent pieces for the given color.
         /// </summary>
         /// <param name="color">The friendly piece color</param>
         /// <returns>List of opponent pieces</returns>
-        List<Piece> GetOpponentPieces(PieceColor color);
+        List<object> GetOpponentPieces(PieceColor color);
 
         /// <summary>
         /// Places a piece at the specified location.
         /// </summary>
         /// <param name="piece">The piece to place</param>
         /// <param name="location">The location to place it</param>
-        void PlacePiece(Piece piece, Location location);
+        void PlacePiece(object piece, Location location);
 
         /// <summary>
         /// Removes the piece at the specified location.
         /// </summary>
         /// <param name="location">The location to clear</param>
         /// <returns>The piece that was removed, or null if empty</returns>
-        Piece RemovePiece(Location location);
+        object RemovePiece(Location location);
 
         /// <summary>
         /// Finds the King of the specified color.
         /// </summary>
         /// <param name="color">The color of the King to find</param>
         /// <returns>The King piece, or null if not found</returns>
-        King FindKing(PieceColor color);
+        object FindKing(PieceColor color);
 
         /// <summary>
         /// Checks if a location is within the board boundaries.

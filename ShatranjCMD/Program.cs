@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ShatranjAI.AI;
 using ShatranjCore;
+using ShatranjCore.Abstractions;
 using ShatranjCore.Game;
+using ShatranjCore.Logging;
 using ShatranjCore.UI;
 
 namespace ShatranjCMD
@@ -41,8 +44,34 @@ namespace ShatranjCMD
                 humanColor = menuHandler.ShowColorSelectionMenu();
             }
 
+            // Create AI instances if needed
+            IChessAI whiteAI = null;
+            IChessAI blackAI = null;
+            ILogger logger = new CompositeLogger(
+                new FileLogger(),
+                new ConsoleLogger(includeTimestamp: false)
+            );
+
+            if (selectedMode == GameMode.HumanVsAI)
+            {
+                IChessAI ai = new BasicAI(depth: 3, logger);
+                if (humanColor == PieceColor.White)
+                {
+                    blackAI = ai;  // AI plays black
+                }
+                else
+                {
+                    whiteAI = ai;  // AI plays white
+                }
+            }
+            else if (selectedMode == GameMode.AIVsAI)
+            {
+                whiteAI = new BasicAI(depth: 3, logger);
+                blackAI = new BasicAI(depth: 3, logger);
+            }
+
             // Start the chess game with selected mode
-            ChessGame game = new ChessGame(selectedMode, humanColor);
+            ChessGame game = new ChessGame(selectedMode, humanColor, whiteAI, blackAI);
             game.Start();
 
             Console.WriteLine();

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ShatranjCore;
+using ShatranjCore.Abstractions;
 using ShatranjCore.Interfaces;
 using ShatranjCore.Pieces;
 
