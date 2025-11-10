@@ -19,17 +19,54 @@ namespace ShatranjCore.Persistence
     }
 
     /// <summary>
+    /// Metadata for a saved game (used for listing save files)
+    /// </summary>
+    [Serializable]
+    public class GameMetadata
+    {
+        public int GameId { get; set; }
+        public DateTime SavedAt { get; set; }
+        public string Difficulty { get; set; }
+        public int TurnCount { get; set; }
+        public string CurrentPlayer { get; set; }  // "White" or "Black"
+        public string GameMode { get; set; }
+        public string GameResult { get; set; }
+        public string WhitePlayerName { get; set; }
+        public string BlackPlayerName { get; set; }
+        public string SaveType { get; set; }  // "Manual" or "Auto"
+
+        public GameMetadata()
+        {
+            SavedAt = DateTime.Now;
+        }
+    }
+
+    /// <summary>
     /// Represents a complete game state for save/load
     /// </summary>
     [Serializable]
     public class GameStateSnapshot
     {
-        public string GameId { get; set; }
+        // Game identification
+        public int GameId { get; set; }
         public DateTime SavedAt { get; set; }
         public string GameMode { get; set; }  // "HumanVsHuman", "HumanVsAI", "AIVsAI"
+        public string SaveType { get; set; }  // "Manual" or "Auto"
+
+        // Player information
         public string CurrentPlayer { get; set; }  // "White" or "Black"
         public string HumanColor { get; set; }  // For AI games
-        public string GameResult { get; set; }  // "InProgress", "Checkmate", "Stalemate"
+        public string WhitePlayerType { get; set; }  // "Human" or "AI"
+        public string BlackPlayerType { get; set; }
+        public string WhitePlayerName { get; set; }
+        public string BlackPlayerName { get; set; }
+
+        // Game state
+        public string GameResult { get; set; }  // "InProgress", "WhiteWins", "BlackWins", "Stalemate", "Draw"
+        public int MoveCount { get; set; }
+        public string Difficulty { get; set; }  // "Easy", "Medium", "Hard", "VeryHard", "Titan"
+
+        // Board state
         public List<PieceData> Pieces { get; set; }
         public List<string> MoveHistory { get; set; }  // Algebraic notation
         public List<PieceData> CapturedPieces { get; set; }
@@ -48,18 +85,32 @@ namespace ShatranjCore.Persistence
         public bool BlackKingsideRookMoved { get; set; }
         public bool BlackQueensideRookMoved { get; set; }
 
-        // Metadata
-        public string WhitePlayerType { get; set; }  // "Human" or "AI"
-        public string BlackPlayerType { get; set; }
-        public int MoveCount { get; set; }
-
         public GameStateSnapshot()
         {
-            GameId = Guid.NewGuid().ToString();
             SavedAt = DateTime.Now;
             Pieces = new List<PieceData>();
             MoveHistory = new List<string>();
             CapturedPieces = new List<PieceData>();
+        }
+
+        /// <summary>
+        /// Creates metadata from the snapshot
+        /// </summary>
+        public GameMetadata ToMetadata()
+        {
+            return new GameMetadata
+            {
+                GameId = this.GameId,
+                SavedAt = this.SavedAt,
+                Difficulty = this.Difficulty,
+                TurnCount = this.MoveCount,
+                CurrentPlayer = this.CurrentPlayer,
+                GameMode = this.GameMode,
+                GameResult = this.GameResult,
+                WhitePlayerName = this.WhitePlayerName,
+                BlackPlayerName = this.BlackPlayerName,
+                SaveType = this.SaveType
+            };
         }
     }
 }

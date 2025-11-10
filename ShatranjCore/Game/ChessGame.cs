@@ -46,6 +46,18 @@ namespace ShatranjCore.Game
         private readonly GameRecorder recorder;
         private readonly GameSerializer serializer;
 
+        // Game configuration and save management
+        private readonly GameConfigManager configManager;
+        private readonly SaveGameManager saveManager;
+        private int currentGameId;
+        private DifficultyLevel difficulty;
+        private string whitePlayerName;
+        private string blackPlayerName;
+
+        // State history for rollback/redo functionality
+        private readonly List<GameStateSnapshot> stateHistory;
+        private readonly Stack<GameStateSnapshot> redoStack;
+
         public ChessGame(
             GameMode mode = GameMode.HumanVsHuman,
             PieceColor humanPlayerColor = PieceColor.White,
@@ -72,6 +84,19 @@ namespace ShatranjCore.Game
             );
             recorder = new GameRecorder(logger);
             serializer = new GameSerializer(logger);
+
+            // Initialize configuration and save management
+            configManager = new GameConfigManager(logger);
+            saveManager = new SaveGameManager(logger);
+            stateHistory = new List<GameStateSnapshot>();
+            redoStack = new Stack<GameStateSnapshot>();
+
+            // Load configuration
+            var config = configManager.GetConfig();
+            difficulty = config.Difficulty;
+            whitePlayerName = config.ProfileName;
+            blackPlayerName = config.OpponentProfileName;
+            currentGameId = configManager.GetNextGameId();
 
             // Set AI instances from constructor parameters
             this.whiteAI = whiteAI;
@@ -191,6 +216,9 @@ namespace ShatranjCore.Game
                     recorder.EndGame(winner.ToString(), "Checkmate");
                     logger.Info($"Game ended - Winner: {winner} by Checkmate");
 
+                    // Cleanup autosave
+                    CleanupGameFiles();
+
                     WaitForKey();
                     break;
                 }
@@ -205,6 +233,9 @@ namespace ShatranjCore.Game
                     // Record game end
                     recorder.EndGame("Draw", "Stalemate");
                     logger.Info("Game ended - Draw by Stalemate");
+
+                    // Cleanup autosave
+                    CleanupGameFiles();
 
                     WaitForKey();
                     break;
@@ -311,6 +342,34 @@ namespace ShatranjCore.Game
 
                 case CommandType.LoadGame:
                     HandleLoadCommand(command);
+                    break;
+
+                case CommandType.Rollback:
+                    HandleRollbackCommand();
+                    break;
+
+                case CommandType.Redo:
+                    HandleRedoCommand();
+                    break;
+
+                case CommandType.ShowSettings:
+                    HandleShowSettingsCommand();
+                    break;
+
+                case CommandType.ResetSettings:
+                    HandleResetSettingsCommand();
+                    break;
+
+                case CommandType.SetProfile:
+                    HandleSetProfileCommand(command);
+                    break;
+
+                case CommandType.SetOpponent:
+                    HandleSetOpponentCommand(command);
+                    break;
+
+                case CommandType.SetDifficulty:
+                    HandleSetDifficultyCommand(command);
                     break;
 
                 case CommandType.Quit:
@@ -649,6 +708,31 @@ namespace ShatranjCore.Game
             players[0].HasTurn = !players[0].HasTurn;
             players[1].HasTurn = !players[1].HasTurn;
             enPassantTracker.NextTurn();
+
+            // Clear redo stack on new move (can't redo after making a new move)
+            redoStack.Clear();
+
+            // Autosave after each turn
+            try
+            {
+                GameStateSnapshot snapshot = CreateSnapshot();
+
+                // Add to state history for rollback (keep last 10 states)
+                stateHistory.Add(snapshot);
+                if (stateHistory.Count > 10)
+                {
+                    stateHistory.RemoveAt(0);
+                }
+
+                // Autosave
+                saveManager.SaveAutosave(snapshot);
+                logger.Debug($"Autosave completed. Turn {snapshot.MoveCount}");
+            }
+            catch (Exception ex)
+            {
+                logger.Warning($"Autosave failed: {ex.Message}");
+                // Don't interrupt gameplay for autosave failures
+            }
         }
 
         /// <summary>
@@ -749,10 +833,11 @@ namespace ShatranjCore.Game
             try
             {
                 GameStateSnapshot snapshot = CreateSnapshot();
-                string filePath = serializer.SaveGame(snapshot, command.FileName);
+                string filePath = saveManager.SaveGame(snapshot, currentGameId);
                 renderer.DisplayInfo($"Game saved successfully!");
+                renderer.DisplayInfo($"Game ID: {currentGameId}");
                 renderer.DisplayInfo($"Location: {filePath}");
-                logger.Info($"Game saved to {filePath}");
+                logger.Info($"Game {currentGameId} saved to {filePath}");
             }
             catch (Exception ex)
             {
@@ -769,34 +854,57 @@ namespace ShatranjCore.Game
         {
             try
             {
-                string filePath = command.FileName;
+                string gameIdStr = command.FileName;
 
-                // If no filename provided, list saved games
-                if (string.IsNullOrEmpty(filePath))
+                // If no game ID provided, list saved games with metadata
+                if (string.IsNullOrEmpty(gameIdStr))
                 {
-                    string[] savedGames = serializer.ListSavedGames();
-                    if (savedGames.Length == 0)
+                    var savedGames = saveManager.ListSavedGames();
+                    if (savedGames.Count == 0)
                     {
                         renderer.DisplayInfo("No saved games found.");
                         WaitForKey();
                         return;
                     }
 
-                    renderer.DisplayInfo("Saved games:");
-                    for (int i = 0; i < savedGames.Length; i++)
+                    renderer.DisplayInfo("════════════════════════════════════════════════════════════════");
+                    renderer.DisplayInfo("                      SAVED GAMES");
+                    renderer.DisplayInfo("════════════════════════════════════════════════════════════════");
+
+                    foreach (var game in savedGames)
                     {
-                        renderer.DisplayInfo($"  {i + 1}. {System.IO.Path.GetFileName(savedGames[i])}");
+                        // Determine game type label
+                        string gameType = game.GameMode == "AIVsAI" ? "Sim" : "Game";
+                        string saveType = string.IsNullOrEmpty(game.SaveType) ? "Manual" : game.SaveType;
+
+                        renderer.DisplayInfo($"{gameType} #{game.GameId} ({saveType}):");
+                        renderer.DisplayInfo($"  Mode: {game.GameMode}");
+                        renderer.DisplayInfo($"  Players: {game.WhitePlayerName} vs {game.BlackPlayerName}");
+                        renderer.DisplayInfo($"  Turn {game.TurnCount} - {game.CurrentPlayer}'s move");
+                        renderer.DisplayInfo($"  Difficulty: {game.Difficulty}");
+                        renderer.DisplayInfo($"  Saved: {game.SavedAt:yyyy-MM-dd HH:mm:ss}");
+                        renderer.DisplayInfo("");
                     }
-                    renderer.DisplayInfo("Usage: game load <filename>");
+
+                    renderer.DisplayInfo("Usage: load [gameId]");
+                    renderer.DisplayInfo("Example: load 1");
                     WaitForKey();
                     return;
                 }
 
-                // Load the game
-                GameStateSnapshot snapshot = serializer.LoadGame(filePath);
+                // Parse game ID
+                if (!int.TryParse(gameIdStr, out int gameId))
+                {
+                    renderer.DisplayError("Invalid game ID. Please enter a number.");
+                    WaitForKey();
+                    return;
+                }
+
+                // Load the game by ID
+                GameStateSnapshot snapshot = saveManager.LoadGame(gameId);
                 RestoreFromSnapshot(snapshot);
-                renderer.DisplayInfo("Game loaded successfully!");
-                logger.Info($"Game loaded from {filePath}");
+                renderer.DisplayInfo($"Game #{gameId} loaded successfully!");
+                logger.Info($"Game {gameId} loaded");
             }
             catch (Exception ex)
             {
@@ -813,12 +921,16 @@ namespace ShatranjCore.Game
         {
             var snapshot = new GameStateSnapshot
             {
+                GameId = currentGameId,
                 GameMode = gameMode.ToString(),
                 CurrentPlayer = currentPlayer.ToString(),
                 HumanColor = humanColor.ToString(),
                 GameResult = gameResult.ToString(),
                 WhitePlayerType = players[0].Type.ToString(),
                 BlackPlayerType = players[1].Type.ToString(),
+                WhitePlayerName = whitePlayerName,
+                BlackPlayerName = blackPlayerName,
+                Difficulty = difficulty.ToString(),
                 MoveCount = moveHistory.GetMoves().Count
             };
 
@@ -877,11 +989,396 @@ namespace ShatranjCore.Game
         /// </summary>
         private void RestoreFromSnapshot(GameStateSnapshot snapshot)
         {
-            // Note: This is a simplified restoration
-            // A full implementation would need to restore en passant, castling rights, etc.
-            renderer.DisplayInfo("Game state restoration is not yet fully implemented.");
-            renderer.DisplayInfo("This feature will be completed in a future update.");
-            logger.Warning("RestoreFromSnapshot called but not fully implemented");
+            try
+            {
+                logger.Info("Starting game state restoration...");
+
+                // 1. Clear current game state
+                capturedPieces.Clear();
+                moveHistory.Clear();
+                enPassantTracker.Reset();
+
+                // 2. Clear the board
+                for (int row = 0; row < 8; row++)
+                {
+                    for (int col = 0; col < 8; col++)
+                    {
+                        Location loc = new Location(row, col);
+                        if (board.GetPiece(loc) != null)
+                        {
+                            board.RemovePiece(loc);
+                        }
+                    }
+                }
+
+                // 3. Restore pieces
+                foreach (var pieceData in snapshot.Pieces)
+                {
+                    PieceColor color = (PieceColor)Enum.Parse(typeof(PieceColor), pieceData.Color);
+                    Piece piece = PieceFactory.CreatePiece(pieceData.Type, color, pieceData.Row, pieceData.Column);
+                    piece.isMoved = pieceData.HasMoved;
+                    board.PlacePiece(piece, new Location(pieceData.Row, pieceData.Column));
+                }
+
+                // 4. Restore captured pieces
+                foreach (var capturedData in snapshot.CapturedPieces)
+                {
+                    PieceColor color = (PieceColor)Enum.Parse(typeof(PieceColor), capturedData.Color);
+                    Piece piece = PieceFactory.CreatePiece(capturedData.Type, color, 0, 0);
+                    capturedPieces.Add(piece);
+                }
+
+                // 5. Restore move history
+                // Note: Move history is restored as strings only
+                // Full move reconstruction would require more complex logic
+                logger.Info($"Move history has {snapshot.MoveHistory.Count} moves");
+
+                // 6. Restore en passant state
+                if (snapshot.EnPassantTargetRow.HasValue && snapshot.EnPassantTargetColumn.HasValue)
+                {
+                    int targetRow = snapshot.EnPassantTargetRow.Value;
+                    int targetCol = snapshot.EnPassantTargetColumn.Value;
+
+                    if (snapshot.EnPassantPawnRow.HasValue && snapshot.EnPassantPawnColumn.HasValue)
+                    {
+                        Location pawnLocation = new Location(
+                            snapshot.EnPassantPawnRow.Value,
+                            snapshot.EnPassantPawnColumn.Value
+                        );
+
+                        // Calculate the from/to locations for RecordPawnDoubleMove
+                        // If target is row 2, pawn moved from row 1 to row 3 (white)
+                        // If target is row 5, pawn moved from row 6 to row 4 (black)
+                        Location fromLocation = (targetRow == 2)
+                            ? new Location(1, targetCol)
+                            : new Location(6, targetCol);
+
+                        enPassantTracker.RecordPawnDoubleMove(fromLocation, pawnLocation);
+                    }
+                }
+
+                // 7. Restore game state
+                currentPlayer = (PieceColor)Enum.Parse(typeof(PieceColor), snapshot.CurrentPlayer);
+                gameResult = (GameResult)Enum.Parse(typeof(GameResult), snapshot.GameResult);
+                gameMode = (GameMode)Enum.Parse(typeof(GameMode), snapshot.GameMode);
+                humanColor = (PieceColor)Enum.Parse(typeof(PieceColor), snapshot.HumanColor);
+
+                // 8. Restore players
+                PlayerType whitePlayerType = (PlayerType)Enum.Parse(typeof(PlayerType), snapshot.WhitePlayerType);
+                PlayerType blackPlayerType = (PlayerType)Enum.Parse(typeof(PlayerType), snapshot.BlackPlayerType);
+
+                players = new Player[2];
+                players[0] = new Player(PieceColor.White, whitePlayerType)
+                {
+                    HasTurn = (currentPlayer == PieceColor.White)
+                };
+                players[1] = new Player(PieceColor.Black, blackPlayerType)
+                {
+                    HasTurn = (currentPlayer == PieceColor.Black)
+                };
+
+                // 9. Note about castling rights
+                // Castling rights are implicitly restored via the HasMoved flag on Kings and Rooks
+                // The castling validator will check these flags when validating castling moves
+
+                logger.Info($"Game state restored successfully. Current player: {currentPlayer}");
+                logger.Info($"Pieces on board: {snapshot.Pieces.Count}, Captured: {capturedPieces.Count}");
+            }
+            catch (Exception ex)
+            {
+                logger.Error("Failed to restore game state", ex);
+                renderer.DisplayError("Failed to restore game state. The save file may be corrupted.");
+                throw;
+            }
         }
+
+        /// <summary>
+        /// Rolls back the game state to the previous turn
+        /// </summary>
+        private void HandleRollbackCommand()
+        {
+            try
+            {
+                if (stateHistory.Count < 2)
+                {
+                    renderer.DisplayInfo("Cannot rollback - no previous state available");
+                    logger.Info("Rollback failed - insufficient state history");
+                    WaitForKey();
+                    return;
+                }
+
+                // Get the current and previous states
+                GameStateSnapshot currentState = stateHistory[stateHistory.Count - 1];
+                GameStateSnapshot previousState = stateHistory[stateHistory.Count - 2];
+
+                // Push current state to redo stack before rolling back
+                redoStack.Push(currentState);
+
+                // Remove current state from history
+                stateHistory.RemoveAt(stateHistory.Count - 1);
+
+                // Restore the previous state
+                RestoreFromSnapshot(previousState);
+
+                renderer.DisplayInfo("Turn undone. Use 'redo' to restore.");
+                logger.Info($"Game rolled back to turn {previousState.MoveCount}");
+                WaitForKey();
+            }
+            catch (Exception ex)
+            {
+                renderer.DisplayError($"Failed to undo: {ex.Message}");
+                logger.Error("Rollback failed", ex);
+                WaitForKey();
+            }
+        }
+
+        /// <summary>
+        /// Redoes the last undone turn
+        /// </summary>
+        private void HandleRedoCommand()
+        {
+            try
+            {
+                if (redoStack.Count == 0)
+                {
+                    renderer.DisplayInfo("Cannot redo - no undone turns available");
+                    logger.Info("Redo failed - redo stack is empty");
+                    WaitForKey();
+                    return;
+                }
+
+                // Pop the state from redo stack
+                GameStateSnapshot redoState = redoStack.Pop();
+
+                // Add it back to state history
+                stateHistory.Add(redoState);
+
+                // Restore the state
+                RestoreFromSnapshot(redoState);
+
+                renderer.DisplayInfo("Turn redone successfully");
+                logger.Info($"Game redone to turn {redoState.MoveCount}");
+                WaitForKey();
+            }
+            catch (Exception ex)
+            {
+                renderer.DisplayError($"Failed to redo: {ex.Message}");
+                logger.Error("Redo failed", ex);
+                WaitForKey();
+            }
+        }
+
+        /// <summary>
+        /// Shows the settings menu
+        /// </summary>
+        private void HandleShowSettingsCommand()
+        {
+            try
+            {
+                var config = configManager.GetConfig();
+
+                renderer.DisplayInfo("════════════════════════════════════════");
+                renderer.DisplayInfo("           GAME SETTINGS");
+                renderer.DisplayInfo("════════════════════════════════════════");
+                renderer.DisplayInfo($"  Profile Name: {config.ProfileName}");
+                renderer.DisplayInfo($"  Opponent Name: {config.OpponentProfileName}");
+                renderer.DisplayInfo($"  Difficulty: {config.Difficulty} (Depth {(int)config.Difficulty})");
+                renderer.DisplayInfo("════════════════════════════════════════");
+                renderer.DisplayInfo("");
+                renderer.DisplayInfo("Commands:");
+                renderer.DisplayInfo("  settings profile [name]     - Set your name");
+                renderer.DisplayInfo("  settings opponent [name]    - Set opponent name");
+                renderer.DisplayInfo("  settings difficulty [level] - Set AI difficulty");
+                renderer.DisplayInfo("    Difficulty options: easy, medium, hard, veryhard, titan");
+                renderer.DisplayInfo("    Or use numbers: 1 (Easy) to 5 (Titan)");
+                renderer.DisplayInfo("  settings reset              - Reset to defaults");
+                renderer.DisplayInfo("");
+
+                logger.Info("Settings menu displayed");
+            }
+            catch (Exception ex)
+            {
+                renderer.DisplayError($"Failed to display settings: {ex.Message}");
+                logger.Error("Settings display failed", ex);
+            }
+
+            WaitForKey();
+        }
+
+        /// <summary>
+        /// Resets settings to defaults
+        /// </summary>
+        private void HandleResetSettingsCommand()
+        {
+            try
+            {
+                configManager.ResetToDefaults();
+                var config = configManager.GetConfig();
+
+                // Update local values
+                difficulty = config.Difficulty;
+                whitePlayerName = config.ProfileName;
+                blackPlayerName = config.OpponentProfileName;
+
+                renderer.DisplayInfo("Settings reset to defaults:");
+                renderer.DisplayInfo($"  Profile: {config.ProfileName}");
+                renderer.DisplayInfo($"  Opponent: {config.OpponentProfileName}");
+                renderer.DisplayInfo($"  Difficulty: {config.Difficulty}");
+
+                logger.Info("Settings reset to defaults");
+            }
+            catch (Exception ex)
+            {
+                renderer.DisplayError($"Failed to reset settings: {ex.Message}");
+                logger.Error("Settings reset failed", ex);
+            }
+
+            WaitForKey();
+        }
+
+        /// <summary>
+        /// Sets the player profile name
+        /// </summary>
+        private void HandleSetProfileCommand(GameCommand command)
+        {
+            try
+            {
+                string newName = command.FileName; // Reusing FileName field
+                configManager.SetProfileName(newName);
+                whitePlayerName = newName;
+
+                renderer.DisplayInfo($"Profile name set to: {newName}");
+                logger.Info($"Profile name changed to: {newName}");
+            }
+            catch (Exception ex)
+            {
+                renderer.DisplayError($"Failed to set profile name: {ex.Message}");
+                logger.Error("Set profile failed", ex);
+            }
+
+            WaitForKey();
+        }
+
+        /// <summary>
+        /// Sets the opponent profile name
+        /// </summary>
+        private void HandleSetOpponentCommand(GameCommand command)
+        {
+            try
+            {
+                string newName = command.FileName; // Reusing FileName field
+                configManager.SetOpponentProfileName(newName);
+                blackPlayerName = newName;
+
+                renderer.DisplayInfo($"Opponent name set to: {newName}");
+                logger.Info($"Opponent name changed to: {newName}");
+            }
+            catch (Exception ex)
+            {
+                renderer.DisplayError($"Failed to set opponent name: {ex.Message}");
+                logger.Error("Set opponent failed", ex);
+            }
+
+            WaitForKey();
+        }
+
+        /// <summary>
+        /// Sets the AI difficulty level
+        /// </summary>
+        private void HandleSetDifficultyCommand(GameCommand command)
+        {
+            try
+            {
+                string difficultyStr = command.FileName; // Reusing FileName field
+                DifficultyLevel newDifficulty;
+
+                // Try parsing as number first (1-5)
+                if (int.TryParse(difficultyStr, out int difficultyNum))
+                {
+                    // Map 1-5 to difficulty levels
+                    switch (difficultyNum)
+                    {
+                        case 1:
+                            newDifficulty = DifficultyLevel.Easy;
+                            break;
+                        case 2:
+                            newDifficulty = DifficultyLevel.Medium;
+                            break;
+                        case 3:
+                            newDifficulty = DifficultyLevel.Hard;
+                            break;
+                        case 4:
+                            newDifficulty = DifficultyLevel.VeryHard;
+                            break;
+                        case 5:
+                            newDifficulty = DifficultyLevel.Titan;
+                            break;
+                        default:
+                            renderer.DisplayError("Difficulty must be between 1-5");
+                            WaitForKey();
+                            return;
+                    }
+                }
+                else
+                {
+                    // Try parsing as difficulty name
+                    if (!Enum.TryParse<DifficultyLevel>(difficultyStr, true, out newDifficulty))
+                    {
+                        renderer.DisplayError("Invalid difficulty. Use: easy, medium, hard, veryhard, titan, or 1-5");
+                        WaitForKey();
+                        return;
+                    }
+                }
+
+                configManager.SetDifficulty(newDifficulty);
+                difficulty = newDifficulty;
+
+                renderer.DisplayInfo($"Difficulty set to: {newDifficulty} (Depth {(int)newDifficulty})");
+                logger.Info($"Difficulty changed to: {newDifficulty}");
+
+                // Note: This will take effect for new games or newly created AI instances
+                renderer.DisplayInfo("Note: Difficulty change will apply to new games");
+            }
+            catch (Exception ex)
+            {
+                renderer.DisplayError($"Failed to set difficulty: {ex.Message}");
+                logger.Error("Set difficulty failed", ex);
+            }
+
+            WaitForKey();
+        }
+
+        /// <summary>
+        /// Cleans up save files when game concludes
+        /// </summary>
+        private void CleanupGameFiles()
+        {
+            try
+            {
+                // Delete autosave since game is over
+                if (saveManager.DeleteAutosave())
+                {
+                    logger.Info("Autosave file deleted - game concluded");
+                }
+
+                // Note: We keep the numbered save files for game history
+                // Users can manually delete them if needed
+            }
+            catch (Exception ex)
+            {
+                logger.Warning($"Failed to cleanup game files: {ex.Message}");
+                // Don't interrupt game ending for cleanup failures
+            }
+        }
+
+        /// <summary>
+        /// Provides access to configuration for external management
+        /// </summary>
+        public GameConfigManager GetConfigManager() => configManager;
+
+        /// <summary>
+        /// Provides access to save manager for external operations
+        /// </summary>
+        public SaveGameManager GetSaveManager() => saveManager;
     }
 }

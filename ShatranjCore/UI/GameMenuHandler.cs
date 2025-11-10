@@ -105,6 +105,99 @@ namespace ShatranjCore.UI
         }
 
         /// <summary>
+        /// Shows the main menu with Resume, New Game, Load Game, Settings, Exit
+        /// </summary>
+        public enum MainMenuChoice
+        {
+            Resume,
+            NewGame,
+            LoadGame,
+            Settings,
+            Exit
+        }
+
+        public MainMenuChoice ShowMainMenu(bool hasAutosave)
+        {
+            Console.Clear();
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("╔════════════════════════════════════════════════════════════════╗");
+            Console.WriteLine("║                        MAIN MENU                               ║");
+            Console.WriteLine("╚════════════════════════════════════════════════════════════════╝");
+            Console.ResetColor();
+            Console.WriteLine();
+
+            int optionNumber = 1;
+            int resumeOption = -1;
+            int newGameOption = -1;
+            int loadGameOption = -1;
+            int settingsOption = -1;
+            int exitOption = -1;
+
+            if (hasAutosave)
+            {
+                Console.WriteLine($"  [{optionNumber}] Resume Game  - Continue your last game");
+                resumeOption = optionNumber++;
+            }
+
+            Console.WriteLine($"  [{optionNumber}] New Game     - Start a fresh game");
+            newGameOption = optionNumber++;
+
+            Console.WriteLine($"  [{optionNumber}] Load Game    - Load a saved game");
+            loadGameOption = optionNumber++;
+
+            Console.WriteLine($"  [{optionNumber}] Settings     - Configure game settings");
+            settingsOption = optionNumber++;
+
+            Console.WriteLine($"  [{optionNumber}] Exit         - Quit Shatranj");
+            exitOption = optionNumber++;
+
+            Console.WriteLine();
+            Console.WriteLine("Press ESC to exit");
+            Console.WriteLine();
+
+            while (true)
+            {
+                Console.Write($"Your choice (1-{optionNumber - 1}): ");
+                var keyInfo = Console.ReadKey();
+                Console.WriteLine();
+
+                if (keyInfo.Key == ConsoleKey.Escape)
+                {
+                    return MainMenuChoice.Exit;
+                }
+
+                int choice;
+                if (int.TryParse(keyInfo.KeyChar.ToString(), out choice))
+                {
+                    if (hasAutosave && choice == resumeOption)
+                    {
+                        return MainMenuChoice.Resume;
+                    }
+                    else if (choice == newGameOption)
+                    {
+                        return MainMenuChoice.NewGame;
+                    }
+                    else if (choice == loadGameOption)
+                    {
+                        return MainMenuChoice.LoadGame;
+                    }
+                    else if (choice == settingsOption)
+                    {
+                        return MainMenuChoice.Settings;
+                    }
+                    else if (choice == exitOption)
+                    {
+                        return MainMenuChoice.Exit;
+                    }
+                }
+
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"Invalid choice. Please enter 1-{optionNumber - 1}.");
+                Console.ResetColor();
+            }
+        }
+
+        /// <summary>
         /// Displays a "feature not yet implemented" message.
         /// </summary>
         public void ShowFeatureNotImplemented(string featureName)

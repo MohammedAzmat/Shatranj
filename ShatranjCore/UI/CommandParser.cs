@@ -38,12 +38,39 @@ namespace ShatranjCore.UI
                 case "game":
                     return ParseGameCommand(parts);
 
+                // Direct game commands (new simplified syntax)
+                case "start":
+                    return new GameCommand { Type = CommandType.StartGame };
+
+                case "save":
+                    return new GameCommand { Type = CommandType.SaveGame, FileName = parts.Length > 1 ? parts[1] : null };
+
+                case "load":
+                    return new GameCommand { Type = CommandType.LoadGame, FileName = parts.Length > 1 ? parts[1] : null };
+
+                case "restart":
+                    return new GameCommand { Type = CommandType.RestartGame };
+
+                case "end":
+                    return new GameCommand { Type = CommandType.EndGame };
+
                 case "quit":
                 case "exit":
                     return new GameCommand { Type = CommandType.Quit };
 
                 case "history":
                     return new GameCommand { Type = CommandType.ShowHistory };
+
+                case "rollback":
+                case "undo":
+                    return new GameCommand { Type = CommandType.Rollback };
+
+                case "redo":
+                    return new GameCommand { Type = CommandType.Redo };
+
+                case "settings":
+                case "config":
+                    return ParseSettingsCommand(parts);
 
                 default:
                     return new GameCommand
@@ -179,6 +206,81 @@ namespace ShatranjCore.UI
         }
 
         /// <summary>
+        /// Parses a settings command: settings [action] [value]
+        /// </summary>
+        private GameCommand ParseSettingsCommand(string[] parts)
+        {
+            if (parts.Length == 1)
+            {
+                // Just "settings" - show settings menu
+                return new GameCommand { Type = CommandType.ShowSettings };
+            }
+
+            string action = parts[1].ToLower();
+
+            switch (action)
+            {
+                case "reset":
+                    return new GameCommand { Type = CommandType.ResetSettings };
+
+                case "profile":
+                case "name":
+                    if (parts.Length < 3)
+                    {
+                        return new GameCommand
+                        {
+                            Type = CommandType.Invalid,
+                            ErrorMessage = "Usage: settings profile [name]"
+                        };
+                    }
+                    return new GameCommand
+                    {
+                        Type = CommandType.SetProfile,
+                        FileName = parts[2]  // Reusing FileName field for profile name
+                    };
+
+                case "opponent":
+                case "opp":
+                    if (parts.Length < 3)
+                    {
+                        return new GameCommand
+                        {
+                            Type = CommandType.Invalid,
+                            ErrorMessage = "Usage: settings opponent [name]"
+                        };
+                    }
+                    return new GameCommand
+                    {
+                        Type = CommandType.SetOpponent,
+                        FileName = parts[2]  // Reusing FileName field for opponent name
+                    };
+
+                case "difficulty":
+                case "diff":
+                    if (parts.Length < 3)
+                    {
+                        return new GameCommand
+                        {
+                            Type = CommandType.Invalid,
+                            ErrorMessage = "Usage: settings difficulty [1-5] or [easy|medium|hard|veryhard|titan]"
+                        };
+                    }
+                    return new GameCommand
+                    {
+                        Type = CommandType.SetDifficulty,
+                        FileName = parts[2]  // Reusing FileName field for difficulty
+                    };
+
+                default:
+                    return new GameCommand
+                    {
+                        Type = CommandType.Invalid,
+                        ErrorMessage = "Unknown settings action. Use: settings [reset|profile|opponent|difficulty]"
+                    };
+            }
+        }
+
+        /// <summary>
         /// Parses a game command: game [action] [filename]
         /// </summary>
         private GameCommand ParseGameCommand(string[] parts)
@@ -278,6 +380,13 @@ namespace ShatranjCore.UI
         LoadGame,
         EndGame,
         RestartGame,
+        Rollback,
+        Redo,
+        ShowSettings,
+        ResetSettings,
+        SetProfile,
+        SetOpponent,
+        SetDifficulty,
         Quit
     }
 }

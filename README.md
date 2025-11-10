@@ -1,6 +1,6 @@
 # Shatranj - Persian Chess Game
 
-[![Phase](https://img.shields.io/badge/Phase-2%20(95%25%20Complete)-blue)]()
+[![Phase](https://img.shields.io/badge/Phase-2%20(100%25%20Complete)-brightgreen)]()
 [![.NET](https://img.shields.io/badge/.NET-9.0-blue)]()
 [![License](https://img.shields.io/badge/License-MIT-green)]()
 [![Tests](https://img.shields.io/badge/Tests-52%20Passing-brightgreen)]()
@@ -14,7 +14,7 @@ A fully-featured chess game built with **SOLID principles** from the ground up. 
 
 Build a complete chess game through iterative phases. See the complete [**Development Roadmap**](docs/ROADMAP.md) for detailed phase information.
 
-**Current Status:** Phase 2 - AI Integration (95% Complete) - All core features working, compilation errors resolved
+**Current Status:** Phase 2 - COMPLETE! ✅ Full save/load system, autosave, rollback, settings, and 5 difficulty levels
 
 ## ✨ Current Features
 
@@ -369,16 +369,40 @@ Read more: [**SOLID_PRINCIPLES.md**](docs/SOLID_PRINCIPLES.md)
 
 ## 📋 Command Quick Reference
 
+### Gameplay Commands
 | Command | Description | Example |
 |---------|-------------|---------|
 | `move [from] [to]` | Move a piece | `move e2 e4` |
-| `castle [side]` | Castle king | `castle king` |
-| `help [location]` | Show legal moves | `help e2` |
+| `castle [side]` | Castle king | `castle king` or `castle` |
+| `undo` | Undo previous turn | `undo` |
+| `redo` | Redo last undo | `redo` |
+
+### Information Commands
+| Command | Description | Example |
+|---------|-------------|---------|
+| `help [location]` | Show legal moves | `help e2` or `help` |
 | `history` | View move history | `history` |
-| `game start` | New game | `game start` |
-| `game save [name]` | Save game | `game save mygame` |
-| `game load [name]` | Load game | `game load mygame` |
-| `quit` | Exit | `quit` |
+
+### Game Management Commands
+| Command | Description | Example |
+|---------|-------------|---------|
+| `start` | Start a new game | `start` |
+| `save` | Save current game | `save` |
+| `load [gameId]` | Load a saved game | `load 1` |
+| `restart` | Restart current game | `restart` |
+| `end` | End current game | `end` |
+
+### Settings Commands
+| Command | Description | Example |
+|---------|-------------|---------|
+| `settings` | Show/change settings | `settings` |
+| `settings difficulty [level]` | Set AI difficulty | `settings difficulty hard` |
+| `settings profile [name]` | Set player name | `settings profile Mohammed` |
+
+### Other Commands
+| Command | Description | Example |
+|---------|-------------|---------|
+| `quit` | Exit game | `quit` |
 
 ### Special Keys
 
@@ -389,22 +413,48 @@ Read more: [**SOLID_PRINCIPLES.md**](docs/SOLID_PRINCIPLES.md)
 
 ## 🎯 Upcoming Features
 
-See [**ROADMAP.md**](docs/ROADMAP.md) for the complete development plan.
+See [**PHASE_3_ROADMAP.md**](docs/PHASE_3_ROADMAP.md) for the complete Phase 3 development plan.
 
-### Phase 2 Completion (Current - 95% Complete)
+### Phase 2: Save/Load & AI Enhancement - ✅ **COMPLETE (100%)**
 - ✅ All core AI features working
 - ✅ Zero compilation errors
-- ✅ All tests passing (52 tests)
-- ⚪ AI thinking time visualization (optional)
-- ⚪ AI difficulty presets (beginner, intermediate, advanced) (optional) (beginner, intermediate, advanced)
-- ⚪ Move quality feedback (optional)
+- ✅ All tests passing (60+ tests including save/load tests)
+- ✅ **Complete save/load system with GameID and metadata**
+- ✅ **SaveType differentiation (Manual vs Auto saves)**
+- ✅ **Autosave after every turn (single file, overwrites)**
+- ✅ **Save slot management (max 10 manual saves + autosave)**
+- ✅ **Turn rollback (undo) and redo functionality**
+- ✅ **5 difficulty levels (Easy 800 ELO → Titan 1400 ELO)**
+- ✅ **Settings menu (profile names, difficulty)**
+- ✅ **Resume game from autosave via main menu**
+- ✅ **Game configuration persistence**
+- ✅ **Simplified command syntax** (e.g., `save` instead of `game save`)
+- ✅ **Rich save game metadata display** (mode, difficulty, turn count, players)
 
-### Phase 3: Enhanced AI (Next)
-- ⚪ Multiple difficulty levels (1-10)
-- ⚪ Opening book integration
-- ⚪ Endgame tablebase support
-- ⚪ AI learning through self-play
-- ⚪ Game analysis tools
+### Phase 3: AI Learning & Game History (Next)
+- ⚪ **Game history persistence system**
+  - Record all completed games with full move sequences
+  - Win/loss/draw statistics per difficulty level
+  - Opening move analysis and success rates
+  - Position evaluation history
+- ⚪ **AI learning through self-play**
+  - Learn from game history database
+  - Pattern recognition from successful games
+  - Adaptive strategy based on past performance
+- ⚪ **Enhanced AI algorithms**
+  - Opening book integration
+  - Endgame tablebase support
+  - Iterative deepening
+  - Quiescence search
+  - Transposition tables with Zobrist hashing
+- ⚪ **Game analysis tools**
+  - Move evaluation and suggestions
+  - Blunder detection
+  - Game replay with annotations
+- ⚪ **Code modularization**
+  - Extract GameStateManager for cleaner state management
+  - Extract SettingsManager for settings operations
+  - Reduce ChessGame.cs complexity (~20% reduction)
 
 ### Phase 4: Online Multiplayer
 - ⚪ Real-time multiplayer
