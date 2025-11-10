@@ -7,6 +7,7 @@ using ShatranjCore.Abstractions;
 using ShatranjCore.Board;
 using ShatranjCore.Interfaces;
 using ShatranjCore.Logging;
+using ShatranjCore.Movement;
 using ShatranjCore.Pieces;
 using ShatranjCore.Validators;
 
