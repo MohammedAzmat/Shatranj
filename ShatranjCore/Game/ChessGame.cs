@@ -11,6 +11,8 @@ using ShatranjCore.Logging;
 using ShatranjCore.Movement;
 using ShatranjCore.Persistence;
 using ShatranjCore.Pieces;
+using ShatranjCore.Settings;
+using ShatranjCore.State;
 using ShatranjCore.UI;
 using ShatranjCore.Validators;
 
@@ -49,14 +51,12 @@ namespace ShatranjCore.Game
         // Game configuration and save management
         private readonly GameConfigManager configManager;
         private readonly SaveGameManager saveManager;
+        private readonly GameStateManager stateManager;
+        private readonly SettingsManager settingsManager;
         private int currentGameId;
         private DifficultyLevel difficulty;
         private string whitePlayerName;
         private string blackPlayerName;
-
-        // State history for rollback/redo functionality
-        private readonly List<GameStateSnapshot> stateHistory;
-        private readonly Stack<GameStateSnapshot> redoStack;
 
         public ChessGame(
             GameMode mode = GameMode.HumanVsHuman,
@@ -88,8 +88,8 @@ namespace ShatranjCore.Game
             // Initialize configuration and save management
             configManager = new GameConfigManager(logger);
             saveManager = new SaveGameManager(logger);
-            stateHistory = new List<GameStateSnapshot>();
-            redoStack = new Stack<GameStateSnapshot>();
+            stateManager = new GameStateManager(saveManager, logger);
+            settingsManager = new SettingsManager(configManager, renderer, logger);
 
             // Load configuration
             var config = configManager.GetConfig();
@@ -710,28 +710,21 @@ namespace ShatranjCore.Game
             enPassantTracker.NextTurn();
 
             // Clear redo stack on new move (can't redo after making a new move)
-            redoStack.Clear();
+            stateManager.ClearRedoStack();
 
             // Autosave after each turn
             try
             {
                 GameStateSnapshot snapshot = CreateSnapshot();
 
-                // Add to state history for rollback (keep last 10 states)
-                stateHistory.Add(snapshot);
-                if (stateHistory.Count > 10)
-                {
-                    stateHistory.RemoveAt(0);
-                }
-
-                // Autosave
-                saveManager.SaveAutosave(snapshot);
-                logger.Debug($"Autosave completed. Turn {snapshot.MoveCount}");
+                // Record state and autosave
+                stateManager.RecordState(snapshot);
+                stateManager.Autosave(snapshot);
             }
             catch (Exception ex)
             {
-                logger.Warning($"Autosave failed: {ex.Message}");
-                // Don't interrupt gameplay for autosave failures
+                logger.Warning($"State management failed: {ex.Message}");
+                // Don't interrupt gameplay for state management failures
             }
         }
 
@@ -1099,29 +1092,19 @@ namespace ShatranjCore.Game
         {
             try
             {
-                if (stateHistory.Count < 2)
+                GameStateSnapshot previousState = stateManager.Rollback();
+
+                if (previousState == null)
                 {
                     renderer.DisplayInfo("Cannot rollback - no previous state available");
-                    logger.Info("Rollback failed - insufficient state history");
                     WaitForKey();
                     return;
                 }
-
-                // Get the current and previous states
-                GameStateSnapshot currentState = stateHistory[stateHistory.Count - 1];
-                GameStateSnapshot previousState = stateHistory[stateHistory.Count - 2];
-
-                // Push current state to redo stack before rolling back
-                redoStack.Push(currentState);
-
-                // Remove current state from history
-                stateHistory.RemoveAt(stateHistory.Count - 1);
 
                 // Restore the previous state
                 RestoreFromSnapshot(previousState);
 
                 renderer.DisplayInfo("Turn undone. Use 'redo' to restore.");
-                logger.Info($"Game rolled back to turn {previousState.MoveCount}");
                 WaitForKey();
             }
             catch (Exception ex)
@@ -1139,25 +1122,19 @@ namespace ShatranjCore.Game
         {
             try
             {
-                if (redoStack.Count == 0)
+                GameStateSnapshot redoState = stateManager.Redo();
+
+                if (redoState == null)
                 {
                     renderer.DisplayInfo("Cannot redo - no undone turns available");
-                    logger.Info("Redo failed - redo stack is empty");
                     WaitForKey();
                     return;
                 }
-
-                // Pop the state from redo stack
-                GameStateSnapshot redoState = redoStack.Pop();
-
-                // Add it back to state history
-                stateHistory.Add(redoState);
 
                 // Restore the state
                 RestoreFromSnapshot(redoState);
 
                 renderer.DisplayInfo("Turn redone successfully");
-                logger.Info($"Game redone to turn {redoState.MoveCount}");
                 WaitForKey();
             }
             catch (Exception ex)
@@ -1175,26 +1152,7 @@ namespace ShatranjCore.Game
         {
             try
             {
-                var config = configManager.GetConfig();
-
-                renderer.DisplayInfo("════════════════════════════════════════");
-                renderer.DisplayInfo("           GAME SETTINGS");
-                renderer.DisplayInfo("════════════════════════════════════════");
-                renderer.DisplayInfo($"  Profile Name: {config.ProfileName}");
-                renderer.DisplayInfo($"  Opponent Name: {config.OpponentProfileName}");
-                renderer.DisplayInfo($"  Difficulty: {config.Difficulty} (Depth {(int)config.Difficulty})");
-                renderer.DisplayInfo("════════════════════════════════════════");
-                renderer.DisplayInfo("");
-                renderer.DisplayInfo("Commands:");
-                renderer.DisplayInfo("  settings profile [name]     - Set your name");
-                renderer.DisplayInfo("  settings opponent [name]    - Set opponent name");
-                renderer.DisplayInfo("  settings difficulty [level] - Set AI difficulty");
-                renderer.DisplayInfo("    Difficulty options: easy, medium, hard, veryhard, titan");
-                renderer.DisplayInfo("    Or use numbers: 1 (Easy) to 5 (Titan)");
-                renderer.DisplayInfo("  settings reset              - Reset to defaults");
-                renderer.DisplayInfo("");
-
-                logger.Info("Settings menu displayed");
+                settingsManager.ShowSettingsMenu();
             }
             catch (Exception ex)
             {
@@ -1212,20 +1170,12 @@ namespace ShatranjCore.Game
         {
             try
             {
-                configManager.ResetToDefaults();
-                var config = configManager.GetConfig();
+                var config = settingsManager.ResetToDefaults();
 
                 // Update local values
                 difficulty = config.Difficulty;
                 whitePlayerName = config.ProfileName;
                 blackPlayerName = config.OpponentProfileName;
-
-                renderer.DisplayInfo("Settings reset to defaults:");
-                renderer.DisplayInfo($"  Profile: {config.ProfileName}");
-                renderer.DisplayInfo($"  Opponent: {config.OpponentProfileName}");
-                renderer.DisplayInfo($"  Difficulty: {config.Difficulty}");
-
-                logger.Info("Settings reset to defaults");
             }
             catch (Exception ex)
             {
@@ -1244,11 +1194,7 @@ namespace ShatranjCore.Game
             try
             {
                 string newName = command.FileName; // Reusing FileName field
-                configManager.SetProfileName(newName);
-                whitePlayerName = newName;
-
-                renderer.DisplayInfo($"Profile name set to: {newName}");
-                logger.Info($"Profile name changed to: {newName}");
+                whitePlayerName = settingsManager.SetProfileName(newName);
             }
             catch (Exception ex)
             {
@@ -1267,11 +1213,7 @@ namespace ShatranjCore.Game
             try
             {
                 string newName = command.FileName; // Reusing FileName field
-                configManager.SetOpponentProfileName(newName);
-                blackPlayerName = newName;
-
-                renderer.DisplayInfo($"Opponent name set to: {newName}");
-                logger.Info($"Opponent name changed to: {newName}");
+                blackPlayerName = settingsManager.SetOpponentName(newName);
             }
             catch (Exception ex)
             {
@@ -1290,51 +1232,7 @@ namespace ShatranjCore.Game
             try
             {
                 string difficultyStr = command.FileName; // Reusing FileName field
-                DifficultyLevel newDifficulty;
-
-                // Try parsing as number first (1-5)
-                if (int.TryParse(difficultyStr, out int difficultyNum))
-                {
-                    // Map 1-5 to difficulty levels
-                    switch (difficultyNum)
-                    {
-                        case 1:
-                            newDifficulty = DifficultyLevel.Easy;
-                            break;
-                        case 2:
-                            newDifficulty = DifficultyLevel.Medium;
-                            break;
-                        case 3:
-                            newDifficulty = DifficultyLevel.Hard;
-                            break;
-                        case 4:
-                            newDifficulty = DifficultyLevel.VeryHard;
-                            break;
-                        case 5:
-                            newDifficulty = DifficultyLevel.Titan;
-                            break;
-                        default:
-                            renderer.DisplayError("Difficulty must be between 1-5");
-                            WaitForKey();
-                            return;
-                    }
-                }
-                else
-                {
-                    // Try parsing as difficulty name
-                    if (!Enum.TryParse<DifficultyLevel>(difficultyStr, true, out newDifficulty))
-                    {
-                        renderer.DisplayError("Invalid difficulty. Use: easy, medium, hard, veryhard, titan, or 1-5");
-                        WaitForKey();
-                        return;
-                    }
-                }
-
-                configManager.SetDifficulty(newDifficulty);
-                difficulty = newDifficulty;
-
-                renderer.DisplayInfo($"Difficulty set to: {newDifficulty} (Depth {(int)newDifficulty})");
-                logger.Info($"Difficulty changed to: {newDifficulty}");
+                difficulty = settingsManager.SetDifficulty(difficultyStr);
 
                 // Note: This will take effect for new games or newly created AI instances
                 renderer.DisplayInfo("Note: Difficulty change will apply to new games");
@@ -1355,11 +1253,8 @@ namespace ShatranjCore.Game
         {
             try
             {
-                // Delete autosave since game is over
-                if (saveManager.DeleteAutosave())
-                {
-                    logger.Info("Autosave file deleted - game concluded");
-                }
+                // Cleanup autosave since game is over
+                stateManager.CleanupAutosave();
 
                 // Note: We keep the numbered save files for game history
                 // Users can manually delete them if needed
