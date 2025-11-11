@@ -19,7 +19,8 @@
       "Bash(dotnet clean:*)",
       "Bash(cd:*)",
       "Bash(xargs basename:*)",
-      "Bash(timeout 60 dotnet run:*)"
+      "Bash(timeout 60 dotnet run:*)",
+      "Bash(tree:*)"
     ],
     "deny": [],
     "ask": []
