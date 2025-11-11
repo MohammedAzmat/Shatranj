@@ -9,8 +9,10 @@ namespace ShatranjCore.State
     /// <summary>
     /// Manages game state snapshots, autosave, rollback, and redo functionality.
     /// Maintains a history of the last 10 turns and provides undo/redo capabilities.
+    /// Implements both read (IGameStateQuery) and write (IGameStateModifier) interfaces.
+    /// Follows Interface Segregation Principle: clients can depend on read-only or write-only views.
     /// </summary>
-    public class GameStateManager
+    public class GameStateManager : IGameStateManager
     {
         private readonly SaveGameManager saveManager;
         private readonly ILogger logger;

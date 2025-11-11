@@ -20,7 +20,10 @@
       "Bash(cd:*)",
       "Bash(xargs basename:*)",
       "Bash(timeout 60 dotnet run:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(nul)",
+      "Bash(dir:*)",
+      "Bash(git pull:*)"
     ],
     "deny": [],
     "ask": []
