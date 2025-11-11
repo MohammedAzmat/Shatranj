@@ -15,6 +15,7 @@ namespace ShatranjCore.Logging
             this.includeTimestamp = includeTimestamp;
         }
 
+        public void Trace(string message) => Log(LogLevel.Trace, message);
         public void Debug(string message) => Log(LogLevel.Debug, message);
         public void Info(string message) => Log(LogLevel.Info, message);
         public void Warning(string message) => Log(LogLevel.Warning, message);
@@ -23,6 +24,11 @@ namespace ShatranjCore.Logging
         public void Error(string message, Exception ex)
         {
             Log(LogLevel.Error, $"{message}\nException: {ex.GetType().Name}: {ex.Message}");
+        }
+
+        public void Critical(string message, Exception ex)
+        {
+            Log(LogLevel.Critical, $"{message}\nCRITICAL Exception: {ex.GetType().Name}: {ex.Message}");
         }
 
         public void Log(LogLevel level, string message)
@@ -34,6 +40,9 @@ namespace ShatranjCore.Logging
 
             switch (level)
             {
+                case LogLevel.Trace:
+                    Console.ForegroundColor = ConsoleColor.DarkGray;
+                    break;
                 case LogLevel.Debug:
                     Console.ForegroundColor = ConsoleColor.Gray;
                     break;
@@ -45,6 +54,9 @@ namespace ShatranjCore.Logging
                     break;
                 case LogLevel.Error:
                     Console.ForegroundColor = ConsoleColor.Red;
+                    break;
+                case LogLevel.Critical:
+                    Console.ForegroundColor = ConsoleColor.Magenta;
                     break;
             }
 

@@ -21,6 +21,12 @@ namespace ShatranjCore.Logging
             loggers.Add(logger);
         }
 
+        public void Trace(string message)
+        {
+            foreach (var logger in loggers)
+                logger.Trace(message);
+        }
+
         public void Debug(string message)
         {
             foreach (var logger in loggers)
@@ -49,6 +55,12 @@ namespace ShatranjCore.Logging
         {
             foreach (var logger in loggers)
                 logger.Error(message, ex);
+        }
+
+        public void Critical(string message, Exception ex)
+        {
+            foreach (var logger in loggers)
+                logger.Critical(message, ex);
         }
 
         public void Log(LogLevel level, string message)
