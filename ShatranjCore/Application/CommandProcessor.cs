@@ -5,6 +5,8 @@ using ShatranjCore.Interfaces;
 using ShatranjCore.Pieces;
 using ShatranjCore.UI;
 using ShatranjCore.Validators;
+using GameCommand = ShatranjCore.UI.GameCommand;
+using CastlingSide = ShatranjCore.Validators.CastlingSide;
 
 namespace ShatranjCore.Application
 {
