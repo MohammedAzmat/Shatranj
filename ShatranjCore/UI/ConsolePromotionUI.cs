@@ -1,44 +1,21 @@
 using System;
 using ShatranjCore.Abstractions;
+using ShatranjCore.Abstractions.Interfaces;
 using ShatranjCore.Pieces;
 
-namespace ShatranjCore.Handlers
+namespace ShatranjCore.UI
 {
     /// <summary>
-    /// Legacy handler for pawn promotion - kept for backward compatibility.
-    /// NOTE: This class is deprecated. Use:
-    /// - IPromotionRule for business logic (checks if promotion needed)
-    /// - IPromotionUI for user interaction (prompts for choice)
-    /// - IPieceFactory for piece creation
-    ///
-    /// This class should be removed in future refactoring.
+    /// Console-based user interface for pawn promotion.
+    /// Responsibility: Handle user interaction and input for promotion selection.
     /// </summary>
-    [Obsolete("Use IPromotionRule, IPromotionUI, and IPieceFactory instead", false)]
-    public class PawnPromotionHandler
+    public class ConsolePromotionUI : IPromotionUI
     {
         /// <summary>
-        /// Checks if a pawn at the given location needs promotion.
-        /// DEPRECATED: Use IPromotionRule.NeedsPromotion instead.
-        /// </summary>
-        public bool NeedsPromotion(Piece piece, Location location)
-        {
-            if (!(piece is Pawn pawn))
-                return false;
-
-            // White pawns promote on row 0, black pawns on row 7
-            if (pawn.Color == PieceColor.White && location.Row == 0)
-                return true;
-
-            if (pawn.Color == PieceColor.Black && location.Row == 7)
-                return true;
-
-            return false;
-        }
-
-        /// <summary>
         /// Prompts user for promotion choice and returns the selected piece type.
-        /// DEPRECATED: Use IPromotionUI.PromptForPromotion instead.
         /// </summary>
+        /// <param name="color">The color of the pawn being promoted (for informational purposes)</param>
+        /// <returns>The Type of piece to promote to, or null if cancelled</returns>
         public Type PromptForPromotion(PieceColor color)
         {
             Console.WriteLine();
@@ -126,27 +103,6 @@ namespace ShatranjCore.Handlers
                 default:
                     return null;
             }
-        }
-
-        /// <summary>
-        /// Creates a new piece for promotion.
-        /// DEPRECATED: Use IPieceFactory.CreatePiece instead.
-        /// </summary>
-        public Piece CreatePromotionPiece(Type pieceType, Location location, PieceColor color)
-        {
-            if (pieceType == typeof(Queen))
-                return new Queen(location.Row, location.Column, color);
-
-            if (pieceType == typeof(Rook))
-                return new Rook(location.Row, location.Column, color);
-
-            if (pieceType == typeof(Bishop))
-                return new Bishop(location.Row, location.Column, color);
-
-            if (pieceType == typeof(Knight))
-                return new Knight(location.Row, location.Column, color);
-
-            throw new ArgumentException($"Invalid promotion piece type: {pieceType.Name}");
         }
     }
 }

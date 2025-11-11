@@ -13,4 +13,10 @@
     <ProjectReference Include="..\..\ShatranjCore\ShatranjCore.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Moq" Version="4.20.72" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+  </ItemGroup>
+
 </Project>
