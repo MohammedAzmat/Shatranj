@@ -17,8 +17,7 @@ using ShatranjCore.Settings;
 using ShatranjCore.State;
 using ShatranjCore.UI;
 using ShatranjCore.Validators;
-using GameCommand = ShatranjCore.UI.GameCommand;
-using CastlingSide = ShatranjCore.Validators.CastlingSide;
+using ShatranjCore.Abstractions.Commands;
 
 namespace ShatranjCore.Game
 {

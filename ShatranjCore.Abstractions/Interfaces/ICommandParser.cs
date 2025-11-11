@@ -1,5 +1,4 @@
-using ShatranjCore.UI;
-using ShatranjCore.Validators;
+using ShatranjCore.Abstractions.Commands;
 
 namespace ShatranjCore.Abstractions.Interfaces
 {

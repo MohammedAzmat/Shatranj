@@ -1,3 +1,5 @@
+using ShatranjCore.Abstractions.Commands;
+
 namespace ShatranjCore.Abstractions.Interfaces
 {
     /// <summary>

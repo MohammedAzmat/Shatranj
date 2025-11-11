@@ -1,5 +1,6 @@
 using System;
 using ShatranjCore.Abstractions;
+using ShatranjCore.Abstractions.Commands;
 using ShatranjCore.Interfaces;
 using ShatranjCore.Pieces;
 
@@ -145,15 +146,6 @@ namespace ShatranjCore.Validators
                 rook.isMoved = true;
             }
         }
-    }
-
-    /// <summary>
-    /// Enum for castling side.
-    /// </summary>
-    public enum CastlingSide
-    {
-        Kingside,
-        Queenside
     }
 
     /// <summary>

@@ -1,12 +1,11 @@
 using System;
 using ShatranjCore.Abstractions;
+using ShatranjCore.Abstractions.Commands;
 using ShatranjCore.Abstractions.Interfaces;
 using ShatranjCore.Interfaces;
 using ShatranjCore.Pieces;
 using ShatranjCore.UI;
 using ShatranjCore.Validators;
-using GameCommand = ShatranjCore.UI.GameCommand;
-using CastlingSide = ShatranjCore.Validators.CastlingSide;
 
 namespace ShatranjCore.Application
 {
