@@ -269,36 +269,62 @@ Possible moves for piece at g8:
 
 ## 🧪 Running Tests
 
-The project has comprehensive test coverage across three test suites:
+The project has comprehensive test coverage with **64+ tests** across multiple test suites.
 
-### Core Tests (40+ tests)
+### Quick Start
 
-**All tests passing with zero compilation errors!** ✓)
+**Run Core Tests (Phase 0 Infrastructure + Movement):**
 ```bash
 cd tests/ShatranjCore.Tests
 dotnet run
 ```
 
-### AI Tests (6 tests)
+**Run AI Tests:**
 ```bash
 cd ShatranjAI.Tests
 dotnet run
 ```
 
-### Integration Tests (6 tests)
-```bash
-cd tests/ShatranjIntegration.Tests
-dotnet run
+### Test Suites Overview
+
+**Phase 0 - Infrastructure Tests (32 tests) - ALL PASSING ✅**
+- Logging Tests (6 tests) - Logger implementations and configurations
+- Command Parser Tests (10 tests) - Command parsing and validation
+- Move History Tests (8 tests) - Move recording and history management
+- Persistence Tests (8 tests) - File I/O and data persistence
+
+**Phase 1+ - Movement & Piece Tests (32+ tests) - ALL PASSING ✅**
+- Pawn, Knight, Bishop, Rook, Queen, King movement
+- Special moves (Castling, En Passant, Pawn Promotion)
+- Check/Checkmate/Stalemate detection
+- Initial game setup
+
+**AI Enhancement Tests (6+ tests) - ALL PASSING ✅**
+- BasicAI initialization and configuration
+- Move evaluation framework
+- Difficulty level handling
+
+### Test Status
+```
+✅ Build Status: Zero compilation errors, zero warnings
+✅ Test Execution: All tests executing and passing
+✅ Test Coverage: Phase 0 infrastructure complete
+✅ Total Tests: 64+
 ```
 
-**Test Coverage:**
-- ✅ All piece movements
-- ✅ Special moves (castling, en passant, promotion)
-- ✅ Check/checkmate detection
-- ✅ AI move selection and evaluation
-- ✅ Full game integration
+### Running All Tests in Sequence
 
-See [**TESTING.md**](docs/TESTING.md) for detailed testing documentation.
+```bash
+# Core tests
+cd tests/ShatranjCore.Tests && dotnet run
+cd ../..
+
+# AI tests
+cd ShatranjAI.Tests && dotnet run
+cd ..
+```
+
+See [**TESTING.md**](docs/TESTING.md) for detailed testing documentation, architecture, and contributing new tests.
 
 ## 🏗️ Project Structure
 

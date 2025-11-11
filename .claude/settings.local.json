@@ -16,7 +16,10 @@
       "Bash(find:*)",
       "Bash(cat:*)",
       "Bash(powershell:*)",
-      "Bash(dotnet clean:*)"
+      "Bash(dotnet clean:*)",
+      "Bash(cd:*)",
+      "Bash(xargs basename:*)",
+      "Bash(timeout 60 dotnet run:*)"
     ],
     "deny": [],
     "ask": []

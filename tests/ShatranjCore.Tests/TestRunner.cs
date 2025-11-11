@@ -3,6 +3,8 @@ using ShatranjCore.Tests.PieceTests;
 using ShatranjCore.Tests.Logging;
 using ShatranjCore.Tests.UI;
 using ShatranjCore.Tests.Movement;
+using ShatranjCore.Tests.Persistence;
+using ShatranjCore.Tests.Validators;
 
 namespace ShatranjCore.Tests
 {
@@ -36,6 +38,19 @@ namespace ShatranjCore.Tests
             // Run move history tests
             var historyTests = new MoveHistoryTests();
             historyTests.RunAllTests();
+
+            // Run persistence tests
+            var persistenceTests = new PersistenceTests();
+            persistenceTests.RunAllTests();
+            persistenceTests.Cleanup();
+
+            // Run validator tests
+            var validatorTests = new ValidatorTests();
+            validatorTests.RunAllTests();
+
+            // Run UI renderer tests
+            var uiTests = new UIRendererTests();
+            uiTests.RunAllTests();
 
             // === PHASE 1: PIECE MOVEMENT TESTS ===
             Console.WriteLine("\n═══════════════════════════════════════════════════════════════");
