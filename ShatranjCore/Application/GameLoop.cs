@@ -8,6 +8,8 @@ using ShatranjCore.Movement;
 using ShatranjCore.State;
 using ShatranjCore.UI;
 using ShatranjCore.Validators;
+using GameStatus = ShatranjCore.UI.GameStatus;
+using MoveRecord = ShatranjCore.Movement.MoveRecord;
 
 namespace ShatranjCore.Application
 {
@@ -18,10 +20,10 @@ namespace ShatranjCore.Application
     public class GameLoop : IGameLoop
     {
         private readonly IChessBoard _board;
-        private readonly IRenderer _renderer;
-        private readonly ICheckDetector _checkDetector;
-        private readonly IMoveHistory _moveHistory;
-        private readonly IGameRecorder _recorder;
+        private readonly ConsoleBoardRenderer _renderer;
+        private readonly CheckDetector _checkDetector;
+        private readonly MoveHistory _moveHistory;
+        private readonly GameRecorder _recorder;
         private readonly ILogger _logger;
         private readonly CommandParser _commandParser;
         private readonly GameStateManager _stateManager;
@@ -40,10 +42,10 @@ namespace ShatranjCore.Application
 
         public GameLoop(
             IChessBoard board,
-            IRenderer renderer,
-            ICheckDetector checkDetector,
-            IMoveHistory moveHistory,
-            IGameRecorder recorder,
+            ConsoleBoardRenderer renderer,
+            CheckDetector checkDetector,
+            MoveHistory moveHistory,
+            GameRecorder recorder,
             ILogger logger,
             CommandParser commandParser,
             GameStateManager stateManager)

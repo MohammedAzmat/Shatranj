@@ -121,7 +121,7 @@ namespace ShatranjCore.Game
             aiHandler = new AIHandler(
                 renderer, enPassantTracker, checkDetector, recorder, logger);
 
-            snapshotManager = new SnapshotManager(logger, new PieceFactory());
+            snapshotManager = new SnapshotManager(logger);
 
             commandParser = new CommandParser();
 

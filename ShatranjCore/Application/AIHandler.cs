@@ -4,6 +4,8 @@ using ShatranjCore.Abstractions.Interfaces;
 using ShatranjCore.Interfaces;
 using ShatranjCore.Learning;
 using ShatranjCore.Pieces;
+using ShatranjCore.UI;
+using ShatranjCore.Validators;
 
 namespace ShatranjCore.Application
 {
@@ -13,17 +15,17 @@ namespace ShatranjCore.Application
     /// </summary>
     public class AIHandler : IAIHandler
     {
-        private readonly IRenderer _renderer;
-        private readonly IEnPassantTracker _enPassantTracker;
-        private readonly ICheckDetector _checkDetector;
-        private readonly IGameRecorder _recorder;
+        private readonly ConsoleBoardRenderer _renderer;
+        private readonly EnPassantTracker _enPassantTracker;
+        private readonly CheckDetector _checkDetector;
+        private readonly GameRecorder _recorder;
         private readonly ILogger _logger;
 
         public AIHandler(
-            IRenderer renderer,
-            IEnPassantTracker enPassantTracker,
-            ICheckDetector checkDetector,
-            IGameRecorder recorder,
+            ConsoleBoardRenderer renderer,
+            EnPassantTracker enPassantTracker,
+            CheckDetector checkDetector,
+            GameRecorder recorder,
             ILogger logger)
         {
             _renderer = renderer;

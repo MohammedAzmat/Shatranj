@@ -9,6 +9,7 @@ using ShatranjCore.Movement;
 using ShatranjCore.Pieces;
 using ShatranjCore.UI;
 using ShatranjCore.Validators;
+using Move = ShatranjCore.Movement.Move;
 
 namespace ShatranjCore.Domain
 {
@@ -19,10 +20,10 @@ namespace ShatranjCore.Domain
     public class MoveExecutor : IMoveExecutor
     {
         private readonly IChessBoard _board;
-        private readonly IRenderer _renderer;
-        private readonly IEnPassantTracker _enPassantTracker;
-        private readonly ICheckDetector _checkDetector;
-        private readonly IMoveHistory _moveHistory;
+        private readonly ConsoleBoardRenderer _renderer;
+        private readonly EnPassantTracker _enPassantTracker;
+        private readonly CheckDetector _checkDetector;
+        private readonly MoveHistory _moveHistory;
         private readonly PawnPromotionHandler _promotionHandler;
         private readonly ILogger _logger;
         private readonly List<Piece> _capturedPieces;
@@ -31,10 +32,10 @@ namespace ShatranjCore.Domain
 
         public MoveExecutor(
             IChessBoard board,
-            IRenderer renderer,
-            IEnPassantTracker enPassantTracker,
-            ICheckDetector checkDetector,
-            IMoveHistory moveHistory,
+            ConsoleBoardRenderer renderer,
+            EnPassantTracker enPassantTracker,
+            CheckDetector checkDetector,
+            MoveHistory moveHistory,
             PawnPromotionHandler promotionHandler,
             ILogger logger)
         {

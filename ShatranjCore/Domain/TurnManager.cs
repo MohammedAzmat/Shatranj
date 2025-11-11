@@ -2,6 +2,9 @@ using System;
 using ShatranjCore.Abstractions;
 using ShatranjCore.Abstractions.Interfaces;
 using ShatranjCore.Game;
+using ShatranjCore.Logging;
+using ShatranjCore.State;
+using ShatranjCore.Validators;
 
 namespace ShatranjCore.Domain
 {
@@ -11,8 +14,8 @@ namespace ShatranjCore.Domain
     /// </summary>
     public class TurnManager : ITurnManager
     {
-        private readonly IEnPassantTracker _enPassantTracker;
-        private readonly IGameStateManager _stateManager;
+        private readonly EnPassantTracker _enPassantTracker;
+        private readonly GameStateManager _stateManager;
         private readonly ILogger _logger;
 
         private PieceColor _currentPlayer;
@@ -21,8 +24,8 @@ namespace ShatranjCore.Domain
         public PieceColor CurrentPlayer => _currentPlayer;
 
         public TurnManager(
-            IEnPassantTracker enPassantTracker,
-            IGameStateManager stateManager,
+            EnPassantTracker enPassantTracker,
+            GameStateManager stateManager,
             ILogger logger)
         {
             _enPassantTracker = enPassantTracker;

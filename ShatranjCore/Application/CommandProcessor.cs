@@ -3,6 +3,7 @@ using ShatranjCore.Abstractions;
 using ShatranjCore.Abstractions.Commands;
 using ShatranjCore.Abstractions.Interfaces;
 using ShatranjCore.Interfaces;
+using ShatranjCore.Movement;
 using ShatranjCore.Pieces;
 using ShatranjCore.UI;
 using ShatranjCore.Validators;
@@ -16,12 +17,12 @@ namespace ShatranjCore.Application
     public class CommandProcessor : ICommandProcessor
     {
         private readonly CommandParser _commandParser;
-        private readonly IRenderer _renderer;
+        private readonly ConsoleBoardRenderer _renderer;
         private readonly IChessBoard _board;
-        private readonly ICheckDetector _checkDetector;
+        private readonly CheckDetector _checkDetector;
         private readonly CastlingValidator _castlingValidator;
         private readonly ILogger _logger;
-        private readonly IMoveHistory _moveHistory;
+        private readonly MoveHistory _moveHistory;
 
         private PieceColor _currentPlayer;
         private bool _isRunning;
@@ -39,12 +40,12 @@ namespace ShatranjCore.Application
 
         public CommandProcessor(
             CommandParser commandParser,
-            IRenderer renderer,
+            ConsoleBoardRenderer renderer,
             IChessBoard board,
-            ICheckDetector checkDetector,
+            CheckDetector checkDetector,
             CastlingValidator castlingValidator,
             ILogger logger,
-            IMoveHistory moveHistory)
+            MoveHistory moveHistory)
         {
             _commandParser = commandParser;
             _renderer = renderer;
