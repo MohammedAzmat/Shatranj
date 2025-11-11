@@ -14,7 +14,9 @@
       "Bash(git add:*)",
       "Bash(git push:*)",
       "Bash(find:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(powershell:*)",
+      "Bash(dotnet clean:*)"
     ],
     "deny": [],
     "ask": []
