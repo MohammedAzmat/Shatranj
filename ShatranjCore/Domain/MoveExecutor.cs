@@ -63,6 +63,8 @@ namespace ShatranjCore.Domain
         /// </summary>
         public void ExecuteMove(Location from, Location to)
         {
+            _logger.Debug($"Executing move: {from.Row},{from.Column} -> {to.Row},{to.Column}");
+
             Piece piece = _board.GetPiece(from);
             if (piece == null)
             {
@@ -100,12 +102,15 @@ namespace ShatranjCore.Domain
             {
                 _capturedPieces.Add(capturedPiece);
                 _renderer.DisplayInfo($"{piece.GetType().Name} captures {capturedPiece.GetType().Name}!");
+                _logger.Info($"Capture: {piece.GetType().Name} captured {capturedPiece.GetType().Name} at {to.Row},{to.Column}");
             }
 
             // Move the piece
             _board.RemovePiece(from);
             _board.PlacePiece(piece, to);
             piece.isMoved = true;
+
+            _logger.Debug($"{piece.GetType().Name} moved from {from.Row},{from.Column} to {to.Row},{to.Column}");
 
             // Track pawn double moves for en passant
             if (piece is Pawn)
@@ -146,6 +151,7 @@ namespace ShatranjCore.Domain
                 promotedPiece.isMoved = true;
 
                 _renderer.DisplayInfo($"Pawn promoted to {promotionPiece.Name}!");
+                _logger.Info($"Pawn promoted to {promotionPiece.Name} at {to.Row},{to.Column}");
                 piece = promotedPiece;
             }
 
@@ -163,6 +169,17 @@ namespace ShatranjCore.Domain
             );
 
             _moveHistory.AddMove(move, _currentPlayer, wasCapture, causedCheck, causedCheckmate);
+
+            if (causedCheckmate)
+            {
+                _logger.Info($"Move caused CHECKMATE! {opponent} king is checkmated");
+            }
+            else if (causedCheck)
+            {
+                _logger.Info($"Move caused CHECK on {opponent} king");
+            }
+
+            _logger.Info($"Move completed: {piece.GetType().Name} -> {to.Row},{to.Column}, Capture={wasCapture}, Check={causedCheck}, Checkmate={causedCheckmate}");
         }
     }
 }

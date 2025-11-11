@@ -86,6 +86,8 @@ namespace ShatranjCore.Application
         {
             var command = _commandParser.Parse(input);
 
+            _logger.Debug($"Processing command: {command.Type}");
+
             switch (command.Type)
             {
                 case CommandType.Move:
@@ -101,16 +103,19 @@ namespace ShatranjCore.Application
                     break;
 
                 case CommandType.ShowHelp:
+                    _logger.Debug("Displaying help menu");
                     _renderer.DisplayCommands();
                     _waitForKeyDelegate?.Invoke();
                     break;
 
                 case CommandType.ShowHistory:
+                    _logger.Debug("Displaying move history");
                     _moveHistory.DisplayHistory();
                     _waitForKeyDelegate?.Invoke();
                     break;
 
                 case CommandType.SaveGame:
+                    _logger.Info("Save game command received");
                     _saveGameDelegate?.Invoke();
                     break;
 
@@ -134,6 +139,7 @@ namespace ShatranjCore.Application
                     break;
 
                 case CommandType.Quit:
+                    _logger.Info($"{_currentPlayer} player quit the game");
                     _renderer.DisplayInfo("Thanks for playing Shatranj!");
                     _isRunning = false;
                     break;
@@ -149,6 +155,8 @@ namespace ShatranjCore.Application
         {
             try
             {
+                _logger.Debug($"Handling move command: {LocationToAlgebraic(command.From)} -> {LocationToAlgebraic(command.To)}");
+
                 Piece piece = _board.GetPiece(command.From);
 
                 if (piece == null)
@@ -181,6 +189,8 @@ namespace ShatranjCore.Application
 
                 _executeMoveDelegate?.Invoke(command.From, command.To, piece);
                 _switchTurnsDelegate?.Invoke();
+
+                _logger.Info($"Move executed: {piece.GetType().Name} {LocationToAlgebraic(command.From)} -> {LocationToAlgebraic(command.To)}");
             }
             catch (Exception ex)
             {
@@ -194,6 +204,8 @@ namespace ShatranjCore.Application
         {
             try
             {
+                _logger.Debug($"Handling castle command for {_currentPlayer}");
+
                 CastlingSide? side = command.CastleSide;
 
                 bool canKingside = _castlingValidator.CanCastleKingside(_board, _currentPlayer);
@@ -221,6 +233,7 @@ namespace ShatranjCore.Application
 
                 string castleType = side == CastlingSide.Kingside ? "kingside" : "queenside";
                 _renderer.DisplayInfo($"{_currentPlayer} castles {castleType}!");
+                _logger.Info($"{_currentPlayer} castled {castleType}");
 
                 _switchTurnsDelegate?.Invoke();
             }
