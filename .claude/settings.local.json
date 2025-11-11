@@ -12,7 +12,9 @@
       "Bash(dotnet add:*)",
       "Bash(dotnet add package:*)",
       "Bash(git add:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(find:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []
