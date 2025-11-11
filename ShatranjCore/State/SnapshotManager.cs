@@ -44,9 +44,10 @@ namespace ShatranjCore.State
             {
                 for (int col = 0; col < 8; col++)
                 {
-                    var piece = board.GetPiece(new Location(row, col));
-                    if (piece != null)
+                    var pieceObj = board.GetPiece(new Location(row, col));
+                    if (pieceObj != null)
                     {
+                        var piece = (Piece)pieceObj;
                         snapshot.Pieces.Add(new PieceData
                         {
                             Type = piece.GetType().Name,
