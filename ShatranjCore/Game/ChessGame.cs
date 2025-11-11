@@ -102,7 +102,7 @@ namespace ShatranjCore.Game
             configManager = new GameConfigManager(logger);
             saveManager = new SaveGameManager(logger);
             stateManager = new GameStateManager(saveManager, logger);
-            settingsManager = new SettingsManager(configManager, renderer, logger);
+            settingsManager = new SettingsManager(configManager, logger);
 
             // Load configuration
             var config = configManager.GetConfig();

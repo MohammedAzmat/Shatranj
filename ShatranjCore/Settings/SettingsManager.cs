@@ -1,67 +1,41 @@
 using System;
 using ShatranjCore.Abstractions;
 using ShatranjCore.Persistence;
-using ShatranjCore.UI;
 
 namespace ShatranjCore.Settings
 {
     /// <summary>
     /// Manages game settings including profile names, opponent names, and difficulty levels.
-    /// Provides UI for displaying and updating settings.
+    /// Responsibility: Business logic only (no UI rendering).
+    ///
+    /// NOTE: UI display logic has been extracted to SettingsMenuUI.
+    /// Use ShowSettingsMenu() -> SettingsMenuUI for user-facing operations.
     /// </summary>
     public class SettingsManager
     {
         private readonly GameConfigManager configManager;
-        private readonly ConsoleBoardRenderer renderer;
         private readonly ILogger logger;
 
         /// <summary>
         /// Initializes a new SettingsManager
         /// </summary>
         /// <param name="configManager">Configuration manager for persisting settings</param>
-        /// <param name="renderer">Renderer for displaying settings UI</param>
         /// <param name="logger">Logger for recording settings operations</param>
-        public SettingsManager(GameConfigManager configManager, ConsoleBoardRenderer renderer, ILogger logger)
+        public SettingsManager(GameConfigManager configManager, ILogger logger)
         {
             this.configManager = configManager ?? throw new ArgumentNullException(nameof(configManager));
-            this.renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
-        /// Displays the settings menu with current configuration
+        /// DEPRECATED: Use SettingsMenuUI.ShowSettingsMenu() instead.
+        /// This method is kept for backward compatibility but does nothing.
         /// </summary>
+        [Obsolete("Use SettingsMenuUI.ShowSettingsMenu() instead", false)]
         public void ShowSettingsMenu()
         {
-            try
-            {
-                var config = configManager.GetConfig();
-
-                renderer.DisplayInfo("════════════════════════════════════════");
-                renderer.DisplayInfo("           GAME SETTINGS");
-                renderer.DisplayInfo("════════════════════════════════════════");
-                renderer.DisplayInfo($"  Profile Name: {config.ProfileName}");
-                renderer.DisplayInfo($"  Opponent Name: {config.OpponentProfileName}");
-                renderer.DisplayInfo($"  Difficulty: {config.Difficulty} (Depth {(int)config.Difficulty})");
-                renderer.DisplayInfo("════════════════════════════════════════");
-                renderer.DisplayInfo("");
-                renderer.DisplayInfo("Commands:");
-                renderer.DisplayInfo("  settings profile [name]     - Set your name");
-                renderer.DisplayInfo("  settings opponent [name]    - Set opponent name");
-                renderer.DisplayInfo("  settings difficulty [level] - Set AI difficulty");
-                renderer.DisplayInfo("    Difficulty options: easy, medium, hard, veryhard, titan");
-                renderer.DisplayInfo("    Or use numbers: 1 (Easy) to 5 (Titan)");
-                renderer.DisplayInfo("  settings reset              - Reset to defaults");
-                renderer.DisplayInfo("");
-
-                logger.Info("Settings menu displayed");
-            }
-            catch (Exception ex)
-            {
-                renderer.DisplayError($"Failed to display settings: {ex.Message}");
-                logger.Error("Settings display failed", ex);
-                throw;
-            }
+            logger.Info("ShowSettingsMenu called on SettingsManager (deprecated)");
+            // UI display logic moved to SettingsMenuUI
         }
 
         /// <summary>
@@ -77,13 +51,11 @@ namespace ShatranjCore.Settings
             try
             {
                 configManager.SetProfileName(name);
-                renderer.DisplayInfo($"Profile name set to: {name}");
                 logger.Info($"Profile name changed to: {name}");
                 return name;
             }
             catch (Exception ex)
             {
-                renderer.DisplayError($"Failed to set profile name: {ex.Message}");
                 logger.Error("Set profile failed", ex);
                 throw;
             }
@@ -102,13 +74,11 @@ namespace ShatranjCore.Settings
             try
             {
                 configManager.SetOpponentProfileName(name);
-                renderer.DisplayInfo($"Opponent name set to: {name}");
                 logger.Info($"Opponent name changed to: {name}");
                 return name;
             }
             catch (Exception ex)
             {
-                renderer.DisplayError($"Failed to set opponent name: {ex.Message}");
                 logger.Error("Set opponent failed", ex);
                 throw;
             }
@@ -148,7 +118,6 @@ namespace ShatranjCore.Settings
                         newDifficulty = DifficultyLevel.Titan;
                         break;
                     default:
-                        renderer.DisplayError("Difficulty must be between 1-5");
                         throw new ArgumentException("Difficulty must be between 1-5", nameof(difficultyStr));
                 }
             }
@@ -157,21 +126,18 @@ namespace ShatranjCore.Settings
                 // Try parsing as difficulty name
                 if (!Enum.TryParse<DifficultyLevel>(difficultyStr, true, out newDifficulty))
                 {
-                    renderer.DisplayError("Invalid difficulty. Use: easy, medium, hard, veryhard, titan, or 1-5");
-                    throw new ArgumentException("Invalid difficulty level", nameof(difficultyStr));
+                    throw new ArgumentException("Invalid difficulty level. Use: easy, medium, hard, veryhard, titan, or 1-5", nameof(difficultyStr));
                 }
             }
 
             try
             {
                 configManager.SetDifficulty(newDifficulty);
-                renderer.DisplayInfo($"Difficulty set to: {newDifficulty} (Depth {(int)newDifficulty})");
                 logger.Info($"Difficulty changed to: {newDifficulty}");
                 return newDifficulty;
             }
             catch (Exception ex)
             {
-                renderer.DisplayError($"Failed to set difficulty: {ex.Message}");
                 logger.Error("Set difficulty failed", ex);
                 throw;
             }
@@ -188,17 +154,11 @@ namespace ShatranjCore.Settings
                 configManager.ResetToDefaults();
                 var config = configManager.GetConfig();
 
-                renderer.DisplayInfo("Settings reset to defaults:");
-                renderer.DisplayInfo($"  Profile: {config.ProfileName}");
-                renderer.DisplayInfo($"  Opponent: {config.OpponentProfileName}");
-                renderer.DisplayInfo($"  Difficulty: {config.Difficulty}");
-
                 logger.Info("Settings reset to defaults");
                 return config;
             }
             catch (Exception ex)
             {
-                renderer.DisplayError($"Failed to reset settings: {ex.Message}");
                 logger.Error("Settings reset failed", ex);
                 throw;
             }
