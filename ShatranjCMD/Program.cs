@@ -120,11 +120,13 @@ namespace ShatranjCMD
                 IChessAI ai = new BasicAI(depth: aiDepth, logger);
                 if (humanColor == PieceColor.White)
                 {
-                    blackAI = ai;  // AI plays black
+                    blackAI = ai;   // AI plays black
+                    whiteAI = null; // Human plays white (explicit reset)
                 }
                 else
                 {
-                    whiteAI = ai;  // AI plays white
+                    whiteAI = ai;   // AI plays white
+                    blackAI = null; // Human plays black (explicit reset)
                 }
             }
             else if (selectedMode == GameMode.AIVsAI)
@@ -183,11 +185,13 @@ namespace ShatranjCMD
                     IChessAI ai = new BasicAI(depth: aiDepth, logger);
                     if (humanColor == PieceColor.White)
                     {
-                        blackAI = ai;  // AI plays black
+                        blackAI = ai;   // AI plays black
+                        whiteAI = null; // Human plays white (explicit reset)
                     }
                     else
                     {
-                        whiteAI = ai;  // AI plays white
+                        whiteAI = ai;   // AI plays white
+                        blackAI = null; // Human plays black (explicit reset)
                     }
                 }
                 else if (gameMode == GameMode.AIVsAI)
@@ -319,11 +323,13 @@ namespace ShatranjCMD
                     IChessAI ai = new BasicAI(depth: aiDepth, logger);
                     if (humanColor == PieceColor.White)
                     {
-                        blackAI = ai;  // AI plays black
+                        blackAI = ai;   // AI plays black
+                        whiteAI = null; // Human plays white (explicit reset)
                     }
                     else
                     {
-                        whiteAI = ai;  // AI plays white
+                        whiteAI = ai;   // AI plays white
+                        blackAI = null; // Human plays black (explicit reset)
                     }
                 }
                 else if (gameMode == GameMode.AIVsAI)
