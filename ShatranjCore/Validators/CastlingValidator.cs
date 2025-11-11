@@ -1,5 +1,6 @@
 using System;
 using ShatranjCore.Abstractions;
+using ShatranjCore.Abstractions.Commands;
 using ShatranjCore.Interfaces;
 using ShatranjCore.Pieces;
 
@@ -104,7 +105,9 @@ namespace ShatranjCore.Validators
 
         /// <summary>
         /// Executes a castling move.
+        /// DEPRECATED: Use ICastlingExecutor.ExecuteCastle instead.
         /// </summary>
+        [Obsolete("Use ICastlingExecutor.ExecuteCastle instead", false)]
         public void ExecuteCastle(IChessBoard board, PieceColor color, CastlingSide side)
         {
             int row = color == PieceColor.White ? 7 : 0;
@@ -145,15 +148,6 @@ namespace ShatranjCore.Validators
                 rook.isMoved = true;
             }
         }
-    }
-
-    /// <summary>
-    /// Enum for castling side.
-    /// </summary>
-    public enum CastlingSide
-    {
-        Kingside,
-        Queenside
     }
 
     /// <summary>

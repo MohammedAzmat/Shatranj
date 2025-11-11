@@ -1,18 +1,24 @@
 using System;
 using ShatranjCore.Abstractions;
-using System.Collections.Generic;
 using ShatranjCore.Pieces;
 
 namespace ShatranjCore.Handlers
 {
     /// <summary>
-    /// Handles pawn promotion logic and user interaction.
-    /// Follows Single Responsibility Principle - only handles pawn promotion.
+    /// Legacy handler for pawn promotion - kept for backward compatibility.
+    /// NOTE: This class is deprecated. Use:
+    /// - IPromotionRule for business logic (checks if promotion needed)
+    /// - IPromotionUI for user interaction (prompts for choice)
+    /// - IPieceFactory for piece creation
+    ///
+    /// This class should be removed in future refactoring.
     /// </summary>
+    [Obsolete("Use IPromotionRule, IPromotionUI, and IPieceFactory instead", false)]
     public class PawnPromotionHandler
     {
         /// <summary>
         /// Checks if a pawn at the given location needs promotion.
+        /// DEPRECATED: Use IPromotionRule.NeedsPromotion instead.
         /// </summary>
         public bool NeedsPromotion(Piece piece, Location location)
         {
@@ -31,6 +37,7 @@ namespace ShatranjCore.Handlers
 
         /// <summary>
         /// Prompts user for promotion choice and returns the selected piece type.
+        /// DEPRECATED: Use IPromotionUI.PromptForPromotion instead.
         /// </summary>
         public Type PromptForPromotion(PieceColor color)
         {
@@ -123,6 +130,7 @@ namespace ShatranjCore.Handlers
 
         /// <summary>
         /// Creates a new piece for promotion.
+        /// DEPRECATED: Use IPieceFactory.CreatePiece instead.
         /// </summary>
         public Piece CreatePromotionPiece(Type pieceType, Location location, PieceColor color)
         {

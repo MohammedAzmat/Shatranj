@@ -3,7 +3,27 @@
     "allow": [
       "Bash(git commit:*)",
       "Bash(taskkill:*)",
-      "Bash(dotnet run)"
+      "Bash(dotnet run)",
+      "Bash(wmic process where name=\"ShatranjCMD.exe\" delete)",
+      "Bash(powershell -Command \"Stop-Process -Name ShatranjCMD -Force -ErrorAction SilentlyContinue; Write-Host ''Process stopped''\")",
+      "Bash(dotnet test:*)",
+      "Bash(dotnet run:*)",
+      "Bash(dotnet build:*)",
+      "Bash(dotnet add:*)",
+      "Bash(dotnet add package:*)",
+      "Bash(git add:*)",
+      "Bash(git push:*)",
+      "Bash(find:*)",
+      "Bash(cat:*)",
+      "Bash(powershell:*)",
+      "Bash(dotnet clean:*)",
+      "Bash(cd:*)",
+      "Bash(xargs basename:*)",
+      "Bash(timeout 60 dotnet run:*)",
+      "Bash(tree:*)",
+      "Bash(nul)",
+      "Bash(dir:*)",
+      "Bash(git pull:*)"
     ],
     "deny": [],
     "ask": []

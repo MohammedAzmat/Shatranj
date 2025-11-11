@@ -10,6 +10,8 @@ namespace ShatranjCore.Movement
     /// <summary>
     /// Tracks the history of moves in a chess game.
     /// Follows Single Responsibility Principle - only manages move history.
+    /// NOTE: MoveHistory has a local MoveRecord class with extended properties.
+    /// For UI rendering, use ConsoleMoveHistoryRenderer with the DisplayHistory method.
     /// </summary>
     public class MoveHistory
     {
@@ -113,7 +115,9 @@ namespace ShatranjCore.Movement
 
         /// <summary>
         /// Displays the move history to console.
+        /// DEPRECATED: Use IMoveHistoryRenderer.DisplayHistory instead.
         /// </summary>
+        [Obsolete("Use IMoveHistoryRenderer.DisplayHistory instead", false)]
         public void DisplayHistory()
         {
             Console.WriteLine("Move History:");

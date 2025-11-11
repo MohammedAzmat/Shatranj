@@ -28,6 +28,12 @@ namespace ShatranjAI.Tests
             BasicAITests.RunAllTests();
             Console.WriteLine();
 
+            // Run AI Enhancement tests
+            Console.WriteLine("Running AI Enhancement tests...");
+            var enhancementTests = new AIEnhancementTests();
+            enhancementTests.RunAllTests();
+            Console.WriteLine();
+
             Console.WriteLine("\n═══════════════════════════════════════════════════════════════");
             Console.WriteLine($"AI Test Suite Complete");
             Console.WriteLine("═══════════════════════════════════════════════════════════════");

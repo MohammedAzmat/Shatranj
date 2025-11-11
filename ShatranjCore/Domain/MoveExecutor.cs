@@ -1,0 +1,186 @@
+using System;
+using System.Collections.Generic;
+using ShatranjCore.Abstractions;
+using ShatranjCore.Abstractions.Interfaces;
+using ShatranjCore.Board;
+using ShatranjCore.Handlers;
+using ShatranjCore.Interfaces;
+using ShatranjCore.Movement;
+using ShatranjCore.Pieces;
+using ShatranjCore.UI;
+using ShatranjCore.Validators;
+using Move = ShatranjCore.Movement.Move;
+
+namespace ShatranjCore.Domain
+{
+    /// <summary>
+    /// Executes chess moves including special moves (en passant, promotion)
+    /// Extracted from ChessGame for Single Responsibility Principle
+    /// </summary>
+    public class MoveExecutor : IMoveExecutor
+    {
+        private readonly IChessBoard _board;
+        private readonly ConsoleBoardRenderer _renderer;
+        private readonly EnPassantTracker _enPassantTracker;
+        private readonly CheckDetector _checkDetector;
+        private readonly MoveHistory _moveHistory;
+        private readonly PawnPromotionHandler _promotionHandler;
+        private readonly ILogger _logger;
+        private readonly List<Piece> _capturedPieces;
+
+        private PieceColor _currentPlayer;
+
+        public MoveExecutor(
+            IChessBoard board,
+            ConsoleBoardRenderer renderer,
+            EnPassantTracker enPassantTracker,
+            CheckDetector checkDetector,
+            MoveHistory moveHistory,
+            PawnPromotionHandler promotionHandler,
+            ILogger logger)
+        {
+            _board = board;
+            _renderer = renderer;
+            _enPassantTracker = enPassantTracker;
+            _checkDetector = checkDetector;
+            _moveHistory = moveHistory;
+            _promotionHandler = promotionHandler;
+            _logger = logger;
+            _capturedPieces = new List<Piece>();
+        }
+
+        public void SetCurrentPlayer(PieceColor color)
+        {
+            _currentPlayer = color;
+        }
+
+        public List<object> GetCapturedPieces()
+        {
+            return new List<object>(_capturedPieces);
+        }
+
+        /// <summary>
+        /// Executes a move on the board
+        /// </summary>
+        public void ExecuteMove(Location from, Location to)
+        {
+            _logger.Debug($"Executing move: {from.Row},{from.Column} -> {to.Row},{to.Column}");
+
+            Piece piece = _board.GetPiece(from);
+            if (piece == null)
+            {
+                _logger.Warning($"ExecuteMove called with no piece at {from}");
+                return;
+            }
+
+            Piece capturedPiece = _board.GetPiece(to);
+            bool wasCapture = capturedPiece != null;
+            bool wasEnPassant = false;
+
+            // Check for en passant capture
+            if (piece is Pawn && capturedPiece == null)
+            {
+                Location? enPassantCaptureLocation = _enPassantTracker.GetEnPassantCaptureLocation();
+                if (enPassantCaptureLocation.HasValue)
+                {
+                    Location? enPassantTarget = _enPassantTracker.GetEnPassantTarget();
+                    if (enPassantTarget.HasValue && to.Row == enPassantTarget.Value.Row && to.Column == enPassantTarget.Value.Column)
+                    {
+                        capturedPiece = _board.GetPiece(enPassantCaptureLocation.Value);
+                        if (capturedPiece != null)
+                        {
+                            _board.RemovePiece(enPassantCaptureLocation.Value);
+                            wasCapture = true;
+                            wasEnPassant = true;
+                            _capturedPieces.Add(capturedPiece);
+                            _renderer.DisplayInfo($"Pawn captures {capturedPiece.GetType().Name} en passant!");
+                        }
+                    }
+                }
+            }
+
+            if (wasCapture && !wasEnPassant)
+            {
+                _capturedPieces.Add(capturedPiece);
+                _renderer.DisplayInfo($"{piece.GetType().Name} captures {capturedPiece.GetType().Name}!");
+                _logger.Info($"Capture: {piece.GetType().Name} captured {capturedPiece.GetType().Name} at {to.Row},{to.Column}");
+            }
+
+            // Move the piece
+            _board.RemovePiece(from);
+            _board.PlacePiece(piece, to);
+            piece.isMoved = true;
+
+            _logger.Debug($"{piece.GetType().Name} moved from {from.Row},{from.Column} to {to.Row},{to.Column}");
+
+            // Track pawn double moves for en passant
+            if (piece is Pawn)
+            {
+                int rowDiff = Math.Abs(to.Row - from.Row);
+                if (rowDiff == 2)
+                {
+                    _enPassantTracker.RecordPawnDoubleMove(from, to);
+                }
+            }
+
+            // Check for pawn promotion
+            if (_promotionHandler.NeedsPromotion(piece, to))
+            {
+                Type promotionPiece = _promotionHandler.PromptForPromotion(_currentPlayer);
+
+                if (promotionPiece == null)
+                {
+                    // User pressed ESC - cancel the move
+                    _renderer.DisplayInfo("Move cancelled.");
+                    _board.RemovePiece(to);
+                    _board.PlacePiece(piece, from);
+                    piece.isMoved = false;
+
+                    if (wasCapture)
+                    {
+                        _board.PlacePiece(capturedPiece, to);
+                        _capturedPieces.Remove(capturedPiece);
+                    }
+
+                    return;
+                }
+
+                // Create promoted piece
+                Piece promotedPiece = _promotionHandler.CreatePromotionPiece(promotionPiece, to, _currentPlayer);
+                _board.RemovePiece(to);
+                _board.PlacePiece(promotedPiece, to);
+                promotedPiece.isMoved = true;
+
+                _renderer.DisplayInfo($"Pawn promoted to {promotionPiece.Name}!");
+                _logger.Info($"Pawn promoted to {promotionPiece.Name} at {to.Row},{to.Column}");
+                piece = promotedPiece;
+            }
+
+            // Check if opponent is now in check/checkmate
+            PieceColor opponent = _currentPlayer == PieceColor.White ? PieceColor.Black : PieceColor.White;
+            bool causedCheck = _checkDetector.IsKingInCheck(_board, opponent);
+            bool causedCheckmate = causedCheck && _checkDetector.IsCheckmate(_board, opponent);
+
+            // Record the move
+            Move move = new Move(
+                piece,
+                new Square(from.Row, from.Column, piece),
+                new Square(to.Row, to.Column, capturedPiece),
+                capturedPiece
+            );
+
+            _moveHistory.AddMove(move, _currentPlayer, wasCapture, causedCheck, causedCheckmate);
+
+            if (causedCheckmate)
+            {
+                _logger.Info($"Move caused CHECKMATE! {opponent} king is checkmated");
+            }
+            else if (causedCheck)
+            {
+                _logger.Info($"Move caused CHECK on {opponent} king");
+            }
+
+            _logger.Info($"Move completed: {piece.GetType().Name} -> {to.Row},{to.Column}, Capture={wasCapture}, Check={causedCheck}, Checkmate={causedCheckmate}");
+        }
+    }
+}
