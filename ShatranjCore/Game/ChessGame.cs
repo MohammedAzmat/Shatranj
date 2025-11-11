@@ -332,7 +332,7 @@ namespace ShatranjCore.Game
             try
             {
                 var context = CreateGameContext();
-                var snapshot = snapshotManager.CreateSnapshot(board, context);
+                var snapshot = (GameStateSnapshot)snapshotManager.CreateSnapshot(board, context);
                 string filePath = saveManager.SaveGame(snapshot, currentGameId);
                 renderer.DisplayInfo($"Game saved successfully! Game ID: {currentGameId}");
                 renderer.DisplayInfo($"Location: {filePath}");

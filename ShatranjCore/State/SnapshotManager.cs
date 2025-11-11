@@ -24,7 +24,7 @@ namespace ShatranjCore.State
         /// <summary>
         /// Creates a snapshot of the current game state
         /// </summary>
-        public GameStateSnapshot CreateSnapshot(IBoardState board, GameContext context)
+        public object CreateSnapshot(IBoardState board, GameContext context)
         {
             var snapshot = new GameStateSnapshot
             {
@@ -65,8 +65,9 @@ namespace ShatranjCore.State
         /// <summary>
         /// Restores game state from a snapshot
         /// </summary>
-        public void RestoreSnapshot(GameStateSnapshot snapshot, IBoardState board, out GameContext context)
+        public void RestoreSnapshot(object snapshotObj, IBoardState board, out GameContext context)
         {
+            var snapshot = (GameStateSnapshot)snapshotObj;
 
             try
             {
