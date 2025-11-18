@@ -98,7 +98,8 @@ namespace ShatranjCore.Game
             this.blackAI = blackAI;
 
             // Initialize infrastructure
-            recorder = new GameRecorder(logger);
+            var database = new FileGameDatabase(logger);
+            recorder = new GameRecorder(logger, null, database);
             configManager = new GameConfigManager(logger);
             saveManager = new SaveGameManager(logger);
             stateManager = new GameStateManager(saveManager, logger);

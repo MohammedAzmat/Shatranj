@@ -13,17 +13,20 @@ namespace ShatranjCore.Learning
     /// <summary>
     /// Records games for AI learning and analysis
     /// Implements IGameRecorder interface for dependency injection
+    /// Can optionally save to IGameDatabase for queryable storage
     /// </summary>
     public class GameRecorder : IGameRecorder
     {
         private readonly string recordDirectory;
         private readonly ILogger logger;
+        private readonly IGameDatabase database;
         private GameRecord currentGame;
         private DateTime gameStartTime;
 
-        public GameRecorder(ILogger logger = null, string recordDirectory = null)
+        public GameRecorder(ILogger logger = null, string recordDirectory = null, IGameDatabase database = null)
         {
             this.logger = logger;
+            this.database = database;
 
             if (string.IsNullOrEmpty(recordDirectory))
             {
@@ -159,6 +162,7 @@ namespace ShatranjCore.Learning
 
         /// <summary>
         /// Ends the current game and saves the record (IGameRecorder interface)
+        /// Saves to both JSON file and database (if database is provided)
         /// </summary>
         /// <param name="result">Game result (1-0, 0-1, 1/2-1/2)</param>
         /// <param name="reason">Reason for game end (checkmate, resignation, etc)</param>
@@ -175,13 +179,30 @@ namespace ShatranjCore.Learning
             currentGame.TotalMoves = currentGame.Moves.Count;
             currentGame.GameDurationMs = (int)(DateTime.Now - gameStartTime).TotalMilliseconds;
 
+            // Save to JSON file
             SaveGameRecord(currentGame);
+
+            // Save to database if available
+            if (database != null)
+            {
+                try
+                {
+                    int gameId = database.SaveGame(currentGame);
+                    logger?.Info($"Game saved to database with ID: {gameId}");
+                }
+                catch (Exception ex)
+                {
+                    logger?.Error("Failed to save game to database", ex);
+                }
+            }
+
             currentGame = null;
         }
 
         /// <summary>
         /// Ends the current game and saves the record (returns file path)
         /// This is the extended version that returns the saved file path
+        /// Also saves to database if available
         /// </summary>
         public string EndGameWithPath(string winner, string endCondition)
         {
@@ -196,7 +217,23 @@ namespace ShatranjCore.Learning
             currentGame.TotalMoves = currentGame.Moves.Count;
             currentGame.GameDurationMs = (int)(DateTime.Now - gameStartTime).TotalMilliseconds;
 
+            // Save to JSON file
             string filePath = SaveGameRecord(currentGame);
+
+            // Save to database if available
+            if (database != null)
+            {
+                try
+                {
+                    int gameId = database.SaveGame(currentGame);
+                    logger?.Info($"Game saved to database with ID: {gameId}");
+                }
+                catch (Exception ex)
+                {
+                    logger?.Error("Failed to save game to database", ex);
+                }
+            }
+
             currentGame = null;
 
             return filePath;

@@ -438,5 +438,39 @@ namespace Shatranj.Tests.Unit.Learning
             // Assert
             Assert.IsAssignableFrom<IGameDatabase>(database);
         }
+
+        [Fact]
+        public void GameRecorder_WithDatabase_SavesGameToDatabase()
+        {
+            // Arrange
+            var testDir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "ShatranjIntegrationTest", System.Guid.NewGuid().ToString());
+            var database = new FileGameDatabase(null, testDir);
+            var recorder = new GameRecorder(null, testDir, database);
+
+            try
+            {
+                // Act
+                recorder.StartGame("Alice", "Bob");
+                recorder.RecordMove("e4", 0.5, PieceColor.White);
+                recorder.RecordMove("e5", -0.5, PieceColor.Black);
+                recorder.EndGame("1-0", "Checkmate");
+
+                // Assert
+                var games = database.GetAllGames();
+                Assert.Single(games);
+                Assert.Equal("Alice", games[0].WhitePlayer);
+                Assert.Equal("Bob", games[0].BlackPlayer);
+                Assert.Equal("1-0", games[0].Winner);
+                Assert.Equal(2, games[0].Moves.Count);
+            }
+            finally
+            {
+                // Cleanup
+                if (System.IO.Directory.Exists(testDir))
+                {
+                    System.IO.Directory.Delete(testDir, true);
+                }
+            }
+        }
     }
 }
