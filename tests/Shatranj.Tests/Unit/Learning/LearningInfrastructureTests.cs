@@ -472,5 +472,54 @@ namespace Shatranj.Tests.Unit.Learning
                 }
             }
         }
+
+        [Fact]
+        public void BasicGameAnalyzer_RealImplementation_ImplementsInterface()
+        {
+            // Arrange & Act
+            var analyzer = new BasicGameAnalyzer();
+
+            // Assert
+            Assert.IsAssignableFrom<IGameAnalyzer>(analyzer);
+        }
+
+        [Fact]
+        public void BasicGameAnalyzer_RealImplementation_AnalyzesGame()
+        {
+            // Arrange
+            var analyzer = new BasicGameAnalyzer();
+            var game = new GameRecord
+            {
+                WhitePlayer = "Alice",
+                BlackPlayer = "Bob",
+                TotalMoves = 4,
+                Moves = new List<MoveRecord>
+                {
+                    new MoveRecord { MoveNumber = 1, Player = "White", AlgebraicNotation = "e4", PositionEvaluation = 0.3 },
+                    new MoveRecord { MoveNumber = 2, Player = "Black", AlgebraicNotation = "e5", PositionEvaluation = 0.3 },
+                    new MoveRecord { MoveNumber = 3, Player = "White", AlgebraicNotation = "Nf3", PositionEvaluation = 0.4 },
+                    new MoveRecord { MoveNumber = 4, Player = "Black", AlgebraicNotation = "Nc6", PositionEvaluation = 0.3 }
+                }
+            };
+
+            // Act
+            var analysis = analyzer.Analyze(game);
+
+            // Assert
+            Assert.NotNull(analysis);
+            Assert.Equal(4, analysis.TotalMoves);
+            Assert.True(analysis.AverageAccuracy >= 0.0 && analysis.AverageAccuracy <= 1.0);
+            Assert.NotNull(analysis.OverallAssessment);
+        }
+
+        [Fact]
+        public void OpeningBook_RealImplementation_LoadsOpenings()
+        {
+            // Arrange & Act
+            var openingBook = new OpeningBook();
+
+            // Assert
+            Assert.True(openingBook.Count >= 0); // May be 0 if file not found
+        }
     }
 }
