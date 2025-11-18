@@ -377,5 +377,66 @@ namespace Shatranj.Tests.Unit.Learning
             Assert.Equal(50.0, status.ProgressPercentage);
             Assert.Equal("Evaluation", status.CurrentPhase);
         }
+
+        // ==========================================
+        // REAL IMPLEMENTATION TESTS
+        // ==========================================
+
+        [Fact]
+        public void GameRecorder_RealImplementation_ImplementsInterface()
+        {
+            // Arrange & Act
+            var recorder = new GameRecorder();
+
+            // Assert
+            Assert.IsAssignableFrom<IGameRecorder>(recorder);
+            Assert.False(recorder.IsRecording);
+        }
+
+        [Fact]
+        public void GameRecorder_RealImplementation_StartsAndEndsGame()
+        {
+            // Arrange
+            var recorder = new GameRecorder();
+
+            // Act
+            recorder.StartGame("Alice", "Bob");
+            bool isRecording = recorder.IsRecording;
+            recorder.EndGame("1-0", "Checkmate");
+            bool isRecordingAfter = recorder.IsRecording;
+
+            // Assert
+            Assert.True(isRecording);
+            Assert.False(isRecordingAfter);
+        }
+
+        [Fact]
+        public void GameRecorder_RealImplementation_RecordsMove()
+        {
+            // Arrange
+            var recorder = new GameRecorder();
+            recorder.StartGame("Alice", "Bob");
+
+            // Act
+            recorder.RecordMove("e4", 0.5, PieceColor.White);
+            recorder.RecordMove("e5", -0.5, PieceColor.Black);
+            var game = recorder.GetRecordedGame();
+
+            // Assert
+            Assert.NotNull(game);
+            Assert.Equal(2, game.Moves.Count);
+            Assert.Equal("e4", game.Moves[0].AlgebraicNotation);
+            Assert.Equal("e5", game.Moves[1].AlgebraicNotation);
+        }
+
+        [Fact]
+        public void FileGameDatabase_RealImplementation_ImplementsInterface()
+        {
+            // Arrange & Act
+            var database = new FileGameDatabase();
+
+            // Assert
+            Assert.IsAssignableFrom<IGameDatabase>(database);
+        }
     }
 }
