@@ -12,8 +12,9 @@ namespace ShatranjCore.Learning
 {
     /// <summary>
     /// Records games for AI learning and analysis
+    /// Implements IGameRecorder interface for dependency injection
     /// </summary>
-    public class GameRecorder
+    public class GameRecorder : IGameRecorder
     {
         private readonly string recordDirectory;
         private readonly ILogger logger;
@@ -38,6 +39,66 @@ namespace ShatranjCore.Learning
             }
 
             Directory.CreateDirectory(this.recordDirectory);
+        }
+
+        /// <summary>
+        /// Property indicating if recording is in progress (IGameRecorder interface)
+        /// </summary>
+        public bool IsRecording => currentGame != null;
+
+        /// <summary>
+        /// Starts recording a new game (IGameRecorder interface)
+        /// </summary>
+        /// <param name="whiteName">Name of white player</param>
+        /// <param name="blackName">Name of black player</param>
+        public void StartGame(string whiteName, string blackName)
+        {
+            currentGame = new GameRecord
+            {
+                WhitePlayer = whiteName,
+                BlackPlayer = blackName,
+                PlayedAt = DateTime.Now,
+                GameMode = "Unknown" // Will be set via SetAIMetadata or externally
+            };
+            gameStartTime = DateTime.Now;
+
+            logger?.Info($"Started recording new game: {currentGame.GameId}");
+        }
+
+        /// <summary>
+        /// Records a move with its evaluation (IGameRecorder interface)
+        /// </summary>
+        /// <param name="moveNotation">Move in algebraic notation (e.g., "e4")</param>
+        /// <param name="evaluationScore">AI evaluation of the position (optional)</param>
+        /// <param name="player">Which player made the move</param>
+        public void RecordMove(string moveNotation, double? evaluationScore, PieceColor player)
+        {
+            if (currentGame == null)
+            {
+                logger?.Warning("Attempted to record move without an active game");
+                return;
+            }
+
+            var moveRecord = new MoveRecord
+            {
+                MoveNumber = currentGame.Moves.Count + 1,
+                Player = player.ToString(),
+                AlgebraicNotation = moveNotation,
+                PositionEvaluation = evaluationScore,
+                // From/To/PieceType will be empty for simplified interface
+                // Can be enriched by calling the detailed RecordMove method
+            };
+
+            currentGame.Moves.Add(moveRecord);
+        }
+
+        /// <summary>
+        /// Gets the recorded game data (IGameRecorder interface)
+        /// </summary>
+        /// <returns>The recorded game</returns>
+        public GameRecord GetRecordedGame()
+        {
+            return currentGame;
         }
 
         /// <summary>
@@ -97,9 +158,32 @@ namespace ShatranjCore.Learning
         }
 
         /// <summary>
-        /// Ends the current game and saves the record
+        /// Ends the current game and saves the record (IGameRecorder interface)
         /// </summary>
-        public string EndGame(string winner, string endCondition)
+        /// <param name="result">Game result (1-0, 0-1, 1/2-1/2)</param>
+        /// <param name="reason">Reason for game end (checkmate, resignation, etc)</param>
+        public void EndGame(string result, string reason = null)
+        {
+            if (currentGame == null)
+            {
+                logger?.Warning("Attempted to end game without an active game");
+                return;
+            }
+
+            currentGame.Winner = result;
+            currentGame.EndCondition = reason ?? "Unknown";
+            currentGame.TotalMoves = currentGame.Moves.Count;
+            currentGame.GameDurationMs = (int)(DateTime.Now - gameStartTime).TotalMilliseconds;
+
+            SaveGameRecord(currentGame);
+            currentGame = null;
+        }
+
+        /// <summary>
+        /// Ends the current game and saves the record (returns file path)
+        /// This is the extended version that returns the saved file path
+        /// </summary>
+        public string EndGameWithPath(string winner, string endCondition)
         {
             if (currentGame == null)
             {
